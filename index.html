@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>EcoAgua 3D – Simulador educativo de potabilización (Modelo Chilibre)</title>
+<meta name="description" content="Laboratorio virtual 3D para diseñar y simular una planta potabilizadora. Recurso educativo conceptual.">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <span class="logo" aria-hidden="true">💧</span>
+    <div>
+      <h1>EcoAgua 3D</h1>
+      <p>Simulador educativo · Modelo Chilibre</p>
+    </div>
+  </div>
+  <div class="top-actions">
+    <button class="btn ghost only-mobile" id="btnLib">☰ Biblioteca</button>
+    <button class="btn ghost only-mobile" id="btnPanel">📊 Panel</button>
+    <button class="btn ghost" id="btnHelp">❓<span class="txt"> Ayuda</span></button>
+  </div>
+</header>
+
+<main class="layout">
+  <!-- PANEL IZQUIERDO -->
+  <aside class="panel left" id="panelLeft">
+    <button class="close-drawer only-mobile" data-close="panelLeft">✕</button>
+    <h2>Agua cruda (escenario)</h2>
+    <div id="scenarios" class="scenarios"></div>
+
+    <h2>Biblioteca de componentes</h2>
+    <p class="hint">Haz clic para añadir, o arrastra al lienzo 3D.</p>
+    <h3 class="cat dep">Depósitos</h3>
+    <div class="lib" id="libDep"></div>
+    <h3 class="cat fis">Tratamientos físicos</h3>
+    <div class="lib" id="libFis"></div>
+    <h3 class="cat qui">Tratamientos químicos</h3>
+    <div class="lib" id="libQui"></div>
+
+    <label class="check"><input type="checkbox" id="chkLabels" checked> Mostrar etiquetas flotantes</label>
+    <p class="disclaimer">⚠️ Recurso educativo conceptual. Todos los valores son <b>simulados</b>.</p>
+  </aside>
+
+  <!-- LIENZO 3D -->
+  <section class="stage" id="stage">
+    <canvas id="c3d"></canvas>
+    <div class="banner" id="banner" hidden></div>
+    <div class="legend">
+      <span><i class="dot fis"></i>Físico</span>
+      <span><i class="dot qui"></i>Químico</span>
+      <span><i class="dot dep"></i>Depósito</span>
+    </div>
+    <div class="nav-hint">Arrastrar fondo: rotar · Rueda/pellizco: zoom · Clic derecho/2 dedos: desplazar · Arrastrar equipo: mover</div>
+    <div class="toast" id="toast" hidden></div>
+    <div class="nogl" id="nogl" hidden>No se pudo cargar el motor 3D (Three.js). Revisa tu conexión a Internet y recarga la página.</div>
+  </section>
+
+  <!-- PANEL DERECHO -->
+  <aside class="panel right" id="panelRight">
+    <button class="close-drawer only-mobile" data-close="panelRight">✕</button>
+    <nav class="tabs" role="tablist">
+      <button class="tab active" data-tab="ficha">Ficha técnica</button>
+      <button class="tab" data-tab="tele">Telemetría</button>
+      <button class="tab" data-tab="eval">Evaluación <span id="scoreBadge" class="badge">–</span></button>
+    </nav>
+    <div class="tabpane active" id="tab-ficha"></div>
+    <div class="tabpane" id="tab-tele"></div>
+    <div class="tabpane" id="tab-eval"></div>
+  </aside>
+</main>
+
+<footer class="bottombar">
+  <div class="group">
+    <button class="btn primary" id="btnPlay">▶ Iniciar</button>
+    <button class="btn" id="btnReset">⟲ Reiniciar</button>
+    <label class="speed">Velocidad
+      <select id="selSpeed">
+        <option value="0.5">0.5×</option>
+        <option value="1" selected>1×</option>
+        <option value="2">2×</option>
+        <option value="4">4×</option>
+      </select>
+    </label>
+    <span class="status" id="status">Listo</span>
+  </div>
+  <div class="group">
+    <button class="btn" id="btnConnect" title="Conectar la salida del equipo seleccionado con otro equipo">🔗 Conectar</button>
+    <button class="btn" id="btnDisconnect" title="Quitar las tuberías del equipo seleccionado">✂ Desconectar</button>
+    <button class="btn danger" id="btnDelete" title="Eliminar equipo seleccionado (Supr)">🗑 Eliminar</button>
+    <button class="btn" id="btnTidy" title="Reorganizar la maqueta siguiendo el orden del tren">▦ Ordenar</button>
+  </div>
+  <div class="group">
+    <button class="btn accent" id="btnChilibre">🏭 Modelo Chilibre</button>
+    <button class="btn" id="btnClear">＋ Maqueta vacía</button>
+    <button class="btn" id="btnExport">⬇ Exportar JSON</button>
+    <button class="btn" id="btnImport">⬆ Importar JSON</button>
+    <input type="file" id="fileImport" accept=".json,application/json" hidden>
+  </div>
+</footer>
+
+<!-- AYUDA / BIENVENIDA -->
+<div class="modal" id="modal">
+  <div class="modal-card">
+    <h2>💧 Bienvenido a EcoAgua 3D</h2>
+    <p>Laboratorio virtual para diseñar y simular una planta potabilizadora. La maqueta precargada se inspira en el tren de tratamiento convencional de la <b>Planta Potabilizadora Federico Guardia Conte (Chilibre, Panamá)</b>, abastecida con agua cruda del Lago Alhajuela / Río Chagres.</p>
+    <ol>
+      <li><b>Explora:</b> arrastra el fondo para rotar, usa la rueda o pellizco para acercar, y clic derecho (o dos dedos) para desplazarte.</li>
+      <li><b>Selecciona</b> un equipo para ver su ficha, sus compuestos químicos y parámetros editables. <b>Arrástralo</b> para moverlo.</li>
+      <li><b>Añade</b> equipos desde la biblioteca (clic o arrastrar). Azul = físico, amarillo = químico.</li>
+      <li><b>Conecta:</b> selecciona un equipo, pulsa <i>Conectar</i> y luego haz clic en el equipo de destino.</li>
+      <li><b>Simula:</b> elige el tipo de agua cruda y pulsa <i>Iniciar</i>. Observa el color del agua y la telemetría.</li>
+      <li><b>Evalúa:</b> revisa la pestaña <i>Evaluación</i> y mejora tu diseño. Guarda tu trabajo con <i>Exportar JSON</i>.</li>
+    </ol>
+    <p class="warnbox">⚠️ <b>Advertencia:</b> EcoAgua 3D es un recurso educativo conceptual. Los valores mostrados son simulados y simplificados. Superar la simulación <b>no certifica potabilidad real</b> ni sirve para dimensionar obras de ingeniería ni dosificar químicos en campo.</p>
+    <button class="btn primary" id="btnCloseModal">Entendido, ¡a construir!</button>
+  </div>
+</div>
+
+<!-- Three.js desde CDN estable (scripts clásicos: también funciona abriendo el archivo localmente) -->
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/controls/OrbitControls.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
