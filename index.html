@@ -2,126 +2,1047 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-<title>EcoAgua 3D – Simulador educativo de potabilización (Modelo Chilibre)</title>
-<meta name="description" content="Laboratorio virtual 3D para diseñar y simular una planta potabilizadora. Recurso educativo conceptual.">
-<link rel="stylesheet" href="styles.css">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Planta Potabilizadora 3D · Agua de Panamá</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+} }
+</script>
+<style>
+:root{
+  --bg0:#04121c; --bg1:#072232; --bg2:#0b2e42; --surf:#0d3047cc; --surf2:#0f3a55;
+  --line:#1d5774; --txt:#e6f6ff; --mut:#8fb6c9; --dim:#5d8aa0;
+  --aqua:#22d3ee; --blue:#38bdf8; --deep:#0ea5e9; --mud:#c08a4a;
+  --chem:#d264f0; --phys:#2fd3c8; --cl:#9be15d;
+  --ok:#34d399; --warn:#fbbf24; --bad:#fb5a7a; --info:#60a5fa; --orange:#fb923c;
+  --r:14px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:var(--bg0);color:var(--txt);font-family:Inter,system-ui,sans-serif;font-size:14px;overflow:hidden}
+button,select,input{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--aqua);outline-offset:2px}
+.app{display:grid;grid-template-rows:60px 1fr;height:100vh}
+/* Header */
+header{display:flex;align-items:center;gap:14px;padding:0 16px;background:linear-gradient(90deg,#062033,#0a2d44 60%,#0b2a3d);border-bottom:1px solid var(--line);position:relative;z-index:5}
+.logo{width:40px;height:40px;flex:none}
+.logo .drop{animation:drip 2.4s ease-in-out infinite;transform-origin:20px 28px}
+@keyframes drip{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(2px) scale(1.06)}}
+.ttl h1{font-family:'Chakra Petch';font-size:19px;letter-spacing:.06em;line-height:1;background:linear-gradient(90deg,#7dd3fc,#22d3ee,#a7f3d0);-webkit-background-clip:text;background-clip:text;color:transparent}
+.ttl p{font-size:11.5px;color:var(--mut);margin-top:3px}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:5px 11px;border-radius:999px;border:1px solid var(--line);background:#0b2a3ecc;font-size:12px;color:var(--mut);white-space:nowrap}
+.chip b{color:var(--txt);font-weight:600}
+.hdr-sp{flex:1}
+.hbtn{display:inline-flex;align-items:center;gap:7px;padding:8px 13px;border-radius:10px;border:1px solid var(--line);background:linear-gradient(180deg,#10405c,#0b2f45);font-weight:600;font-size:12.5px;transition:transform .15s,border-color .15s}
+.hbtn:hover{transform:translateY(-1px);border-color:var(--aqua)}
+.hbtn.off{opacity:.7;border-color:#5b3a4a}
+.hbtn svg{width:16px;height:16px}
+.concept{display:flex}
+/* Main */
+main{display:grid;grid-template-columns:1fr 344px;min-height:0}
+.scene{position:relative;overflow:hidden;background:radial-gradient(1200px 600px at 30% 0%,#0f4766 0%,transparent 60%),radial-gradient(900px 500px at 90% 100%,#13394f 0%,transparent 60%),linear-gradient(180deg,#06202f,#03111b)}
+.scene canvas{display:block;width:100%;height:100%;touch-action:none}
+.grain,.vig{position:absolute;inset:0;pointer-events:none}
+.vig{background:radial-gradient(ellipse at center,transparent 55%,rgba(0,0,0,.55) 100%)}
+.grain{opacity:.07;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+#labels{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+#labels svg{position:absolute;inset:0;width:100%;height:100%}
+.lbl{position:absolute;transform:translate(-50%,-100%);pointer-events:auto;cursor:pointer;padding:4px 9px;border-radius:999px;font-size:11.5px;font-weight:600;white-space:nowrap;background:#06202fe6;border:1px solid var(--line);color:var(--txt);box-shadow:0 4px 14px #0007;transition:background .2s,border-color .2s,transform .15s}
+.lbl:hover{transform:translate(-50%,-100%) scale(1.06)}
+.lbl i{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:6px;vertical-align:1px}
+.lbl .tg{font-size:9px;font-family:'Chakra Petch';letter-spacing:.08em;margin-left:6px;padding:1px 5px;border-radius:5px;display:none}
+.modeon .lbl .tg{display:inline-block}
+.tg.f{background:#0f4a4a;color:#7ff5ea}.tg.q{background:#4a1d55;color:#f3b4ff}
+.lbl.sel{border-color:var(--aqua);background:#0b3b55f2}
+.lbl.act{border-color:#ffffff88}
+.anc{position:absolute;width:7px;height:7px;border-radius:50%;transform:translate(-50%,-50%);background:#fff;box-shadow:0 0 8px #fff}
+/* Overlays */
+.badge{position:absolute;left:16px;top:14px;display:flex;align-items:center;gap:12px;padding:10px 16px 10px 10px;border-radius:16px;background:#061c2bdd;border:1px solid var(--line);backdrop-filter:blur(6px);box-shadow:0 10px 30px #0008}
+.badge .num{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;font-family:'Chakra Petch';font-size:24px;font-weight:700;color:#04121c}
+.badge h2{font-family:'Chakra Petch';font-size:18px;letter-spacing:.05em;text-transform:uppercase}
+.badge p{font-size:11.5px;color:var(--mut)}
+.badge .ty{font-family:'Chakra Petch';font-size:10px;letter-spacing:.1em;padding:2px 7px;border-radius:6px;margin-left:8px;vertical-align:3px}
+.pop{animation:pop .45s cubic-bezier(.2,1.6,.4,1)}
+@keyframes pop{0%{transform:scale(.85);opacity:.4}100%{transform:scale(1);opacity:1}}
+.help{position:absolute;left:50%;top:14px;transform:translateX(-50%);font-size:11.5px;color:var(--mut);padding:6px 12px;border-radius:999px;background:#061c2bb3;border:1px solid #1d577466;white-space:nowrap}
+.meters{position:absolute;right:14px;top:14px;width:236px;padding:11px 12px;border-radius:14px;background:#061c2bdd;border:1px solid var(--line);backdrop-filter:blur(6px)}
+.meters h4,.panel h3{font-family:'Chakra Petch';font-size:11.5px;letter-spacing:.12em;color:var(--aqua);text-transform:uppercase;margin-bottom:8px}
+.mrow{display:grid;grid-template-columns:78px 1fr 52px;align-items:center;gap:7px;font-size:11.5px;margin:5px 0}
+.mrow span:first-child{color:var(--mut)}
+.mrow b{font-family:'Chakra Petch';text-align:right;font-size:12.5px}
+.bar{height:6px;border-radius:4px;background:#0d2d40;overflow:hidden;position:relative}
+.bar i{position:absolute;left:0;top:0;bottom:0;border-radius:4px;transition:width .3s,background .3s}
+.mnote{font-size:10px;color:var(--dim);margin-top:6px}
+.card{position:absolute;left:16px;bottom:118px;width:310px;padding:14px;border-radius:16px;background:#061c2bf0;border:1px solid var(--line);box-shadow:0 16px 40px #000a;display:none}
+.card.show{display:block;animation:pop .35s ease}
+.card h5{font-family:'Chakra Petch';font-size:10.5px;letter-spacing:.14em;color:var(--mut)}
+.card h3{font-size:16px;margin:4px 0 6px;display:flex;align-items:center;gap:8px}
+.card p{font-size:12.5px;line-height:1.5;color:#cfe8f5}
+.card .x{position:absolute;right:10px;top:8px;background:none;border:none;font-size:18px;color:var(--mut)}
+.timeline{position:absolute;left:16px;right:16px;bottom:14px;padding:10px 12px 9px;border-radius:16px;background:#061c2bdd;border:1px solid var(--line);backdrop-filter:blur(6px)}
+.tl-segs{display:flex;gap:4px;position:relative}
+.seg{flex:1;padding:6px 6px;border-radius:8px;font-size:11.5px;font-weight:600;text-align:center;border:1px solid transparent;background:#0c2a3d;transition:all .2s;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.seg:hover{transform:translateY(-1px)}
+.seg.on{color:#04121c}
+.tl-track{position:relative;height:16px;margin-top:6px}
+.tl-track .rail{position:absolute;left:0;right:0;top:7px;height:2px;background:#1d5774}
+.tl-track .mk{position:absolute;top:0;transform:translateX(-50%);font-size:9.5px;font-family:'Chakra Petch';color:var(--mut);white-space:nowrap}
+.tl-track .mk::before{content:'';display:block;width:2px;height:6px;margin:3px auto 0;background:currentColor}
+.mk{padding-top:0}
+.mkr{position:absolute;top:-28px;width:3px;height:44px;border-radius:2px;background:#fff;box-shadow:0 0 10px #fff;transform:translateX(-50%)}
+.tl-read{display:flex;justify-content:space-between;gap:10px;font-size:11px;color:var(--mut);margin-top:6px;flex-wrap:wrap}
+.tl-read b{color:var(--txt);font-family:'Chakra Petch'}
+/* Panel */
+.panel{overflow-y:auto;background:linear-gradient(180deg,#071f2e,#05151f);border-left:1px solid var(--line);padding:14px 14px 30px}
+.sec{padding:13px;border-radius:var(--r);background:#0a2a3dcc;border:1px solid #1d577488;margin-bottom:12px;animation:rise .5s both}
+.sec:nth-child(2){animation-delay:.05s}.sec:nth-child(3){animation-delay:.1s}.sec:nth-child(4){animation-delay:.15s}.sec:nth-child(5){animation-delay:.2s}
+@keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.row{display:flex;gap:8px}
+.btn{flex:1;display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:9px 10px;border-radius:10px;border:1px solid var(--line);background:linear-gradient(180deg,#114562,#0b3249);font-weight:600;font-size:12.5px;transition:transform .15s,border-color .15s,box-shadow .15s}
+.btn:hover{transform:translateY(-1px);border-color:var(--aqua);box-shadow:0 6px 16px #0006}
+.btn.pri{background:linear-gradient(135deg,#0ea5e9,#22d3ee);color:#03202e;border-color:transparent}
+.btn.big{padding:12px;font-family:'Chakra Petch';letter-spacing:.12em;font-size:14px;background:linear-gradient(135deg,#fb923c,#d264f0);color:#1b0820;border:none}
+.btn svg{width:15px;height:15px}
+label.sl{display:block;margin-top:11px;font-size:12px;color:var(--mut)}
+label.sl .v{float:right;color:var(--txt);font-family:'Chakra Petch'}
+input[type=range]{width:100%;margin-top:6px;accent-color:var(--aqua);height:20px}
+.hint{font-size:11px;color:var(--dim);margin-top:5px;line-height:1.4}
+.phcard .ph{display:flex;align-items:center;gap:10px}
+.phcard .n{width:34px;height:34px;border-radius:9px;display:grid;place-items:center;font-family:'Chakra Petch';font-weight:700;font-size:18px;color:#04121c}
+.phcard h4{font-size:15px}
+.phcard small{color:var(--mut);font-size:11px}
+.phcard p{font-size:12.5px;line-height:1.5;margin-top:9px;color:#d3ebf7}
+.obs{margin-top:9px;padding:8px 10px;border-radius:10px;background:#0c3a3a66;border:1px dashed #2fd3c866;font-size:12px;line-height:1.45}
+.tog{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid #1d577444}
+.tog:last-child{border-bottom:none}
+.tog div b{display:block;font-size:12.5px;font-weight:600}
+.tog div span{font-size:11px;color:var(--dim)}
+.sw{position:relative;width:40px;height:22px;flex:none;border-radius:999px;background:#163f57;border:1px solid var(--line);transition:background .2s}
+.sw::after{content:'';position:absolute;left:2px;top:2px;width:16px;height:16px;border-radius:50%;background:#9cc3d6;transition:transform .2s,background .2s}
+.sw.on{background:linear-gradient(90deg,#0ea5e9,#22d3ee)}
+.sw.on::after{transform:translateX(18px);background:#fff}
+select{width:100%;padding:8px 10px;border-radius:10px;background:#0b3249;border:1px solid var(--line);margin-top:6px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px}
+.result{margin-top:10px;border-radius:12px;padding:10px;background:#061c2b;border:1px solid var(--line)}
+.rrow{display:flex;justify-content:space-between;align-items:center;font-size:12px;padding:4px 0;border-bottom:1px solid #1d577433}
+.rrow:last-child{border:none}
+.rrow em{font-style:normal;color:var(--dim);font-size:10.5px}
+.ok{color:var(--ok)}.bad{color:var(--bad)}.warn{color:var(--warn)}
+.verdict{margin-top:8px;padding:8px 10px;border-radius:10px;font-size:12px;line-height:1.45}
+.verdict.good{background:#0b3a2c;border:1px solid #34d39966}
+.verdict.no{background:#3a0f1c;border:1px solid #fb5a7a66}
+.cmp{border-radius:12px;border:1px solid #1d577488;margin-top:8px;overflow:hidden;background:#071f2e}
+.cmp summary{list-style:none;cursor:pointer;padding:9px 11px;display:flex;align-items:center;gap:9px;font-weight:600;font-size:12.5px}
+.cmp summary::-webkit-details-marker{display:none}
+.cmp summary .f{margin-left:auto;font-family:'Chakra Petch';font-size:12px;color:var(--mut)}
+.cmp .dot{width:10px;height:10px;border-radius:50%;flex:none}
+.cmp .body{padding:0 11px 11px;font-size:12px;line-height:1.5;color:#cfe8f5}
+.cmp .body .eq{font-family:'Chakra Petch';background:#0b2a3d;border-radius:8px;padding:6px 8px;margin:6px 0;color:#bfe9ff;font-size:12px}
+.cmp ul{padding-left:16px;margin-top:4px}
+.cmp li{margin:3px 0}
+.legend{display:flex;flex-wrap:wrap;gap:6px}
+.lg{display:inline-flex;align-items:center;gap:6px;padding:5px 9px;border-radius:999px;border:1px solid #1d577499;background:#0b2a3d;font-size:11.5px;transition:all .15s}
+.lg:hover{transform:translateY(-1px);border-color:var(--aqua)}
+.lg.sel{border-color:var(--aqua);background:#0f3f5a}
+.lg i{width:8px;height:8px;border-radius:50%}
+.facts p{font-size:12.3px;line-height:1.5;color:#d3ebf7;margin-top:7px}
+.facts blockquote{margin-top:8px;padding:8px 10px;border-left:3px solid var(--aqua);background:#0b2a3d;border-radius:0 10px 10px 0;font-size:12.3px;line-height:1.45}
+.facts a{color:#7dd3fc}
+.src{font-size:11px;line-height:1.45;margin-top:8px;padding-left:16px;color:var(--mut)}
+.src li{margin:3px 0}
+.keys{display:grid;grid-template-columns:auto 1fr;gap:5px 10px;font-size:11.5px;color:var(--mut)}
+kbd{font-family:'Chakra Petch';font-size:11px;padding:1px 6px;border-radius:5px;background:#0f3a55;border:1px solid var(--line);color:var(--txt)}
+.toast-wrap{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);display:flex;flex-direction:column;gap:6px;z-index:50;pointer-events:none}
+.toast{padding:9px 16px;border-radius:12px;background:#0b3249f2;border:1px solid var(--aqua);font-size:12.5px;box-shadow:0 10px 30px #000a;animation:tin .3s ease}
+@keyframes tin{from{opacity:0;transform:translateY(8px)}}
+.flash{position:fixed;inset:0;background:#fff;opacity:0;pointer-events:none;z-index:60;transition:opacity .4s}
+/* loader / error */
+#loader,#err{position:fixed;inset:0;z-index:80;display:grid;place-items:center;background:radial-gradient(circle at 50% 40%,#0c3a55,#03111b);transition:opacity .6s}
+#loader .in{text-align:center}
+#loader svg{width:90px;height:90px}
+#loader .w{animation:wave 1.6s ease-in-out infinite}
+@keyframes wave{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+#loader p{font-family:'Chakra Petch';letter-spacing:.2em;color:var(--aqua);margin-top:14px;font-size:13px}
+#err{display:none}
+#err .in{max-width:380px;text-align:center;padding:26px;border-radius:18px;background:#061c2b;border:1px solid var(--bad)}
+#err h2{font-family:'Chakra Petch';color:var(--bad);margin:8px 0}
+#err p{color:var(--mut);font-size:13px;line-height:1.5;margin-bottom:14px}
+.modal{position:fixed;inset:0;z-index:70;display:none;place-items:center;background:#000a}
+.modal.show{display:grid}
+.modal .in{max-width:min(900px,92vw);padding:16px;border-radius:16px;background:#061c2b;border:1px solid var(--line);text-align:center}
+.modal img{max-width:100%;max-height:68vh;border-radius:10px;border:1px solid var(--line)}
+.modal p{font-size:12.5px;color:var(--mut);margin:10px 0}
+/* scrollbars */
+.panel::-webkit-scrollbar,.modal .in::-webkit-scrollbar{width:10px}
+.panel::-webkit-scrollbar-track{background:#04121c}
+.panel::-webkit-scrollbar-thumb{border-radius:8px;background:linear-gradient(180deg,#38bdf8,#fb923c);border:2px solid #04121c}
+.panel::-webkit-scrollbar-thumb:hover{background:linear-gradient(180deg,#7dd3fc,#fdba74)}
+.panel{scrollbar-color:#38bdf8 #04121c;scrollbar-width:thin}
+@media (max-width:1180px){.help{display:none}.meters{width:210px}}
+@media (max-width:920px){
+  html,body{overflow:auto}
+  .app{height:auto;min-height:100vh}
+  main{grid-template-columns:1fr}
+  .scene{height:58vh}
+  .panel{border-left:none;border-top:1px solid var(--line);overflow:visible}
+  .concept,.ttl p{display:none}
+  .meters{top:66px;right:8px;width:168px;padding:7px 9px}
+  .meters h4{font-size:10px;margin-bottom:3px}.mnote{display:none}
+  .mrow{grid-template-columns:56px 1fr 38px;font-size:10px;margin:3px 0}
+  .tl-read span:last-child{display:none}.tl-track .mk{font-size:0}.tl-track .mk::before{height:8px}
+  .badge{left:10px;top:10px;padding:6px 10px 6px 6px}.badge .num{width:34px;height:34px;font-size:19px}.badge h2{font-size:14px}
+  .seg{font-size:0;padding:8px 2px}.seg::before{content:attr(data-n);font-size:12px}
+  .card{left:10px;right:10px;width:auto;bottom:118px}
+  .timeline{left:8px;right:8px}
+  .hbtn span{display:none}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
 </head>
 <body>
-
-<header class="topbar">
-  <div class="brand">
-    <span class="logo" aria-hidden="true">💧</span>
-    <div>
-      <h1>EcoAgua 3D</h1>
-      <p>Simulador educativo · Modelo Chilibre</p>
-    </div>
-  </div>
-  <div class="top-actions">
-    <button class="btn ghost only-mobile" id="btnLib">☰ Biblioteca</button>
-    <button class="btn ghost only-mobile" id="btnPanel">📊 Panel</button>
-    <button class="btn ghost" id="btnHelp">❓<span class="txt"> Ayuda</span></button>
-  </div>
+<div class="app" id="app">
+<header>
+  <svg class="logo" viewBox="0 0 40 40" aria-hidden="true">
+    <defs><linearGradient id="lg1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7dd3fc"/><stop offset="1" stop-color="#0ea5e9"/></linearGradient></defs>
+    <rect x="1" y="1" width="38" height="38" rx="11" fill="#082a3e" stroke="#1d5774"/>
+    <g class="drop"><path d="M20 7 C25 14 29 19 29 24 a9 9 0 0 1 -18 0 C11 19 15 14 20 7Z" fill="url(#lg1)"/><path d="M16 24 a4 4 0 0 0 4 4" stroke="#e0f7ff" stroke-width="2" fill="none" stroke-linecap="round"/></g>
+  </svg>
+  <div class="ttl"><h1>PLANTA POTABILIZADORA 3D</h1><p>Del lago Alajuela al grifo de la ciudad de Panamá · Química · Equipo 1</p></div>
+  <div class="concept"><span class="chip">Concepto clave: <b>física separa · química transforma</b></span></div>
+  <div class="hdr-sp"></div>
+  <button class="hbtn" id="bSound" title="Activar / silenciar sonido"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path id="sndWave" d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12"/></svg><span id="sndTxt">Sonido: sí</span></button>
+  <button class="hbtn" id="bFull" title="Pantalla completa"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg><span>Pantalla</span></button>
 </header>
-
-<main class="layout">
-  <!-- PANEL IZQUIERDO -->
-  <aside class="panel left" id="panelLeft">
-    <button class="close-drawer only-mobile" data-close="panelLeft">✕</button>
-    <h2>Agua cruda (escenario)</h2>
-    <div id="scenarios" class="scenarios"></div>
-
-    <h2>Biblioteca de componentes</h2>
-    <p class="hint">Haz clic para añadir, o arrastra al lienzo 3D.</p>
-    <h3 class="cat dep">Depósitos</h3>
-    <div class="lib" id="libDep"></div>
-    <h3 class="cat fis">Tratamientos físicos</h3>
-    <div class="lib" id="libFis"></div>
-    <h3 class="cat qui">Tratamientos químicos</h3>
-    <div class="lib" id="libQui"></div>
-
-    <label class="check"><input type="checkbox" id="chkLabels" checked> Mostrar etiquetas flotantes</label>
-    <p class="disclaimer">⚠️ Recurso educativo conceptual. Todos los valores son <b>simulados</b>.</p>
-  </aside>
-
-  <!-- LIENZO 3D -->
-  <section class="stage" id="stage">
-    <canvas id="c3d"></canvas>
-    <div class="banner" id="banner" hidden></div>
-    <div class="legend">
-      <span><i class="dot fis"></i>Físico</span>
-      <span><i class="dot qui"></i>Químico</span>
-      <span><i class="dot dep"></i>Depósito</span>
+<main>
+  <section class="scene" id="scene">
+    <canvas id="cv" aria-label="Escena 3D de la planta potabilizadora"></canvas>
+    <div id="labels"><svg id="lines"></svg></div>
+    <div class="vig"></div><div class="grain"></div>
+    <div class="badge" id="badge"><div class="num" id="bNum">1</div><div><h2 id="bName">Captación</h2><p id="bSub">—</p></div></div>
+    <div class="help">Arrastra para girar · rueda para zoom · clic en una pieza para ver qué hace</div>
+    <div class="meters" id="meters">
+      <h4>Calidad del agua · aquí</h4>
+      <div class="mrow"><span>Turbiedad</span><div class="bar"><i id="mT"></i></div><b id="vT">—</b></div>
+      <div class="mrow"><span>pH</span><div class="bar"><i id="mP"></i></div><b id="vP">—</b></div>
+      <div class="mrow"><span>Cloro libre</span><div class="bar"><i id="mC"></i></div><b id="vC">—</b></div>
+      <div class="mrow"><span>Microbios</span><div class="bar"><i id="mB"></i></div><b id="vB">—</b></div>
+      <div class="mnote">Valores ilustrativos del modelo · NTU = unidades de turbiedad</div>
     </div>
-    <div class="nav-hint">Arrastrar fondo: rotar · Rueda/pellizco: zoom · Clic derecho/2 dedos: desplazar · Arrastrar equipo: mover</div>
-    <div class="toast" id="toast" hidden></div>
-    <div class="nogl" id="nogl" hidden>No se pudo cargar el motor 3D (Three.js). Revisa tu conexión a Internet y recarga la página.</div>
+    <div class="card" id="card"><button class="x" id="cardX" aria-label="Cerrar">×</button><h5>PIEZA DE LA PLANTA</h5><h3 id="cName"></h3><p id="cDesc"></p></div>
+    <div class="timeline">
+      <div class="tl-segs" id="segs"></div>
+      <div class="tl-track" id="track"><div class="rail"></div><div class="mkr" id="mkr"></div></div>
+      <div class="tl-read"><span>Recorrido: <b id="rProg">0%</b> · Etapa <b id="rPh">1 de 6</b></span><span>Caudal <b id="rFlow">11 m³/s</b> · Litros entregados (sim.): <b id="rLit">0</b></span><span>Al = aluminio · Cl₂ = cloro</span></div>
+    </div>
   </section>
+  <aside class="panel" id="panel">
+    <div class="sec">
+      <h3>Controles del recorrido</h3>
+      <div class="row">
+        <button class="btn pri" id="bPlay"><svg viewBox="0 0 24 24" fill="currentColor"><path id="playIco" d="M7 5h4v14H7zM13 5h4v14h-4z"/></svg><span id="playTxt">Pausar</span></button>
+        <button class="btn" id="bStep"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M5 5l9 7-9 7zM16 5h3v14h-3z"/></svg>Siguiente etapa</button>
+      </div>
+      <label class="sl">Caudal simulado <span class="v" id="flowV">11 m³/s</span><input type="range" id="flow" min="2" max="20" step="1" value="11"></label>
+      <div class="hint">Chilibre produce unos 210 millones de galones al día (≈ 9–11 m³ por segundo). Bájalo para ver cada etapa en cámara lenta.</div>
+      <div style="margin-top:12px"><button class="btn big" id="bExp" style="width:100%">DESPIECE DE LA PLANTA</button></div>
+      <label class="sl">Separación de etapas <span class="v" id="expV">0%</span><input type="range" id="exp" min="0" max="100" value="0"></label>
+    </div>
 
-  <!-- PANEL DERECHO -->
-  <aside class="panel right" id="panelRight">
-    <button class="close-drawer only-mobile" data-close="panelRight">✕</button>
-    <nav class="tabs" role="tablist">
-      <button class="tab active" data-tab="ficha">Ficha técnica</button>
-      <button class="tab" data-tab="tele">Telemetría</button>
-      <button class="tab" data-tab="eval">Evaluación <span id="scoreBadge" class="badge">–</span></button>
-    </nav>
-    <div class="tabpane active" id="tab-ficha"></div>
-    <div class="tabpane" id="tab-tele"></div>
-    <div class="tabpane" id="tab-eval"></div>
+    <div class="sec phcard">
+      <h3>Etapa actual</h3>
+      <div class="ph"><div class="n" id="pN">1</div><div><h4 id="pName">Captación</h4><small id="pSub"></small></div></div>
+      <p id="pDesc"></p>
+      <div class="obs">👀 <b>Observa:</b> <span id="pTip"></span></div>
+    </div>
+
+    <div class="sec">
+      <h3>Laboratorio de dosis · simula</h3>
+      <label class="sl" style="margin-top:0">Época del año (turbiedad del lago)
+        <select id="season"><option value="seca">Estación seca · lago claro (≈8 NTU)</option><option value="lluvia">Estación lluviosa · lago turbio (≈60 NTU)</option></select></label>
+      <label class="sl">Sulfato de aluminio <span class="v" id="dAlV">15 mg/L</span><input type="range" id="dAl" min="0" max="70" step="1" value="15"></label>
+      <label class="sl">Cal hidratada <span class="v" id="dCaV">8 mg/L</span><input type="range" id="dCa" min="0" max="40" step="1" value="8"></label>
+      <label class="sl">Cloro <span class="v" id="dClV">1.6 mg/L</span><input type="range" id="dCl" min="0" max="6" step="0.1" value="1.6"></label>
+      <div class="row" style="margin-top:10px"><button class="btn" id="bOpt">Dosis óptima</button><button class="btn" id="bBadDose">Probar un error</button></div>
+      <div class="result" id="result"></div>
+      <div class="hint">El modelo es simplificado para clase: muestra tendencias reales (más turbiedad pide más coagulante; el exceso deja aluminio y baja el pH; poco cloro deja microbios).</div>
+    </div>
+
+    <div class="sec">
+      <h3>Visualización</h3>
+      <div class="tog"><div><b>Corte transversal</b><span>Quita la pared frontal de los tanques</span></div><button class="sw" id="tCut" aria-label="Corte"></button></div>
+      <div class="tog"><div><b>Etiquetas</b><span>Nombres en español sobre el modelo</span></div><button class="sw on" id="tLbl" aria-label="Etiquetas"></button></div>
+      <div class="tog"><div><b>Físico vs. químico</b><span>Turquesa = físico · morado = químico</span></div><button class="sw" id="tMode" aria-label="Modo físico químico"></button></div>
+      <div class="tog"><div><b>Seguir la gota</b><span>La cámara acompaña al agua</span></div><button class="sw" id="tFollow" aria-label="Seguir gota"></button></div>
+      <div class="tog"><div><b>Giro automático</b><span>La cámara orbita sola</span></div><button class="sw" id="tRot" aria-label="Giro automático"></button></div>
+      <label class="sl" style="margin-top:8px">Calidad gráfica
+        <select id="quality"><option value="2">Alta</option><option value="1" selected>Media (recomendada)</option><option value="0">Baja (computadoras del aula)</option></select></label>
+    </div>
+
+    <div class="sec">
+      <h3>Cámara</h3>
+      <div class="grid2"><button class="btn" data-cam="front">Frontal</button><button class="btn" data-cam="side">Lateral</button><button class="btn" data-cam="top">Superior</button><button class="btn" data-cam="iso">Isométrica</button></div>
+      <div class="grid2" style="margin-top:7px"><button class="btn" id="bSurprise">🎲 Vista sorpresa</button><button class="btn" id="bCenter">Centrar</button></div>
+      <div class="grid2" style="margin-top:7px"><button class="btn" id="bReset">↺ Reiniciar</button><button class="btn" id="bShot">📷 Captura PNG</button></div>
+    </div>
+
+    <div class="sec">
+      <h3>Compuestos químicos · función y límites</h3>
+      <div id="cmps"></div>
+    </div>
+
+    <div class="sec">
+      <h3>Piezas de la planta</h3>
+      <div class="legend" id="legend"></div>
+    </div>
+
+    <div class="sec facts">
+      <h3>¿Por qué el agua de la capital es buena?</h3>
+      <p><b>Fuente protegida.</b> La potabilizadora Federico Guardia Conte (Chilibre) toma el agua cruda del lago Alajuela, en la cuenca del río Chagres, una zona de bosque protegido que también alimenta al Canal. Agua cruda más limpia = tratamiento más eficaz.</p>
+      <p><b>Escala enorme.</b> Chilibre abastece a los distritos de Panamá y San Miguelito con unos 210 millones de galones diarios y se describe como la planta más grande de Centroamérica.</p>
+      <p><b>Control constante.</b> La norma panameña fija, por ejemplo, pH entre 6.5 y 8.5 y turbiedad máxima de 1.0 NTU; el Canal de Panamá, que potabiliza agua para más de la mitad de la población, inauguró en 2024 un laboratorio moderno de calidad.</p>
+      <blockquote>El director del IDAAN afirmó en 2023 que el agua de las áreas urbanas es “perfectamente potable” y que él mismo la toma.</blockquote>
+      <p class="hint" style="margin-top:8px">Para ser justos en la exposición: el reto de Panamá suele ser la <b>continuidad</b> del servicio (cortes, puntos altos), no tanto la calidad en la ciudad. Y no es igual en todo el país: en 2025 Azuero tuvo restricciones por contaminación del río La Villa.</p>
+      <ol class="src">
+        <li><a href="https://www.tvn-2.com/nacionales/potabilizadora-chilibre-suspendera-suministro-agua-trabajos_1_2201945.html" target="_blank" rel="noopener">TVN – Toma de agua cruda del río Chagres (2025)</a></li>
+        <li><a href="https://www.laestrella.com.pa/panama/nacional/potabilizadora-de-chilibre-sufre-falla-varios-puntos-sin-agua-BC15530177" target="_blank" rel="noopener">La Estrella – Chilibre produce 210 millones de galones diarios (2025)</a></li>
+        <li><a href="https://www.panamaamerica.com.pa/tema-del-dia/larga-vida-la-reina-la-potabilizadora-madre-1135974" target="_blank" rel="noopener">Panamá América – la más grande de Centroamérica (2019)</a></li>
+        <li><a href="https://www.panamaamerica.com.pa/sociedad/la-realidad-del-agua-es-un-espejo-de-la-inequidad-1216936" target="_blank" rel="noopener">Panamá América – Entrevista al director del IDAAN (2023)</a></li>
+        <li><a href="https://documentoesia.miambiente.gob.pa/75793.pdf" target="_blank" rel="noopener">MiAmbiente – EsIA nuevo módulo de Chilibre (procesos)</a></li>
+        <li><a href="https://minsa.gob.pa/sites/default/files/publicacion-general/29-feb-2016.pdf" target="_blank" rel="noopener">MINSA – Límites DGNTI-COPANIT 23-395-99</a></li>
+        <li><a href="https://www.tvn-2.com/nacionales/autoridad-canal-panama-agua-inaugura-nuevo-laboratorio-permitira_1_2123015.amp.html" target="_blank" rel="noopener">TVN – Laboratorio de calidad de agua del Canal (2024)</a></li>
+        <li><a href="https://pancanal.com/wp-content/uploads/2023/02/Norma-307-Agua-Potable-a-bordo-del-equipo-flotante-Rev-2022.pdf" target="_blank" rel="noopener">Canal de Panamá – Norma 307 (cloro residual ≥ 0.8 ppm)</a></li>
+      </ol>
+    </div>
+
+    <div class="sec">
+      <h3>Atajos de teclado</h3>
+      <div class="keys"><kbd>Espacio</kbd><span>Reproducir / pausar</span><kbd>→</kbd><span>Siguiente etapa</span><kbd>1–6</kbd><span>Saltar a una etapa</span><kbd>E</kbd><span>Despiece / armar</span><kbd>C</kbd><span>Corte transversal</span><kbd>L</kbd><span>Etiquetas</span><kbd>M</kbd><span>Físico vs. químico</span><kbd>F</kbd><span>Seguir la gota</span><kbd>R</kbd><span>Reiniciar</span><kbd>Esc</kbd><span>Cerrar ficha</span></div>
+    </div>
   </aside>
 </main>
-
-<footer class="bottombar">
-  <div class="group">
-    <button class="btn primary" id="btnPlay">▶ Iniciar</button>
-    <button class="btn" id="btnReset">⟲ Reiniciar</button>
-    <label class="speed">Velocidad
-      <select id="selSpeed">
-        <option value="0.5">0.5×</option>
-        <option value="1" selected>1×</option>
-        <option value="2">2×</option>
-        <option value="4">4×</option>
-      </select>
-    </label>
-    <span class="status" id="status">Listo</span>
-  </div>
-  <div class="group">
-    <button class="btn" id="btnConnect" title="Conectar la salida del equipo seleccionado con otro equipo">🔗 Conectar</button>
-    <button class="btn" id="btnDisconnect" title="Quitar las tuberías del equipo seleccionado">✂ Desconectar</button>
-    <button class="btn danger" id="btnDelete" title="Eliminar equipo seleccionado (Supr)">🗑 Eliminar</button>
-    <button class="btn" id="btnTidy" title="Reorganizar la maqueta siguiendo el orden del tren">▦ Ordenar</button>
-  </div>
-  <div class="group">
-    <button class="btn accent" id="btnChilibre">🏭 Modelo Chilibre</button>
-    <button class="btn" id="btnClear">＋ Maqueta vacía</button>
-    <button class="btn" id="btnExport">⬇ Exportar JSON</button>
-    <button class="btn" id="btnImport">⬆ Importar JSON</button>
-    <input type="file" id="fileImport" accept=".json,application/json" hidden>
-  </div>
-</footer>
-
-<!-- AYUDA / BIENVENIDA -->
-<div class="modal" id="modal">
-  <div class="modal-card">
-    <h2>💧 Bienvenido a EcoAgua 3D</h2>
-    <p>Laboratorio virtual para diseñar y simular una planta potabilizadora. La maqueta precargada se inspira en el tren de tratamiento convencional de la <b>Planta Potabilizadora Federico Guardia Conte (Chilibre, Panamá)</b>, abastecida con agua cruda del Lago Alhajuela / Río Chagres.</p>
-    <ol>
-      <li><b>Explora:</b> arrastra el fondo para rotar, usa la rueda o pellizco para acercar, y clic derecho (o dos dedos) para desplazarte.</li>
-      <li><b>Selecciona</b> un equipo para ver su ficha, sus compuestos químicos y parámetros editables. <b>Arrástralo</b> para moverlo.</li>
-      <li><b>Añade</b> equipos desde la biblioteca (clic o arrastrar). Azul = físico, amarillo = químico.</li>
-      <li><b>Conecta:</b> selecciona un equipo, pulsa <i>Conectar</i> y luego haz clic en el equipo de destino.</li>
-      <li><b>Simula:</b> elige el tipo de agua cruda y pulsa <i>Iniciar</i>. Observa el color del agua y la telemetría.</li>
-      <li><b>Evalúa:</b> revisa la pestaña <i>Evaluación</i> y mejora tu diseño. Guarda tu trabajo con <i>Exportar JSON</i>.</li>
-    </ol>
-    <p class="warnbox">⚠️ <b>Advertencia:</b> EcoAgua 3D es un recurso educativo conceptual. Los valores mostrados son simulados y simplificados. Superar la simulación <b>no certifica potabilidad real</b> ni sirve para dimensionar obras de ingeniería ni dosificar químicos en campo.</p>
-    <button class="btn primary" id="btnCloseModal">Entendido, ¡a construir!</button>
-  </div>
 </div>
+<div class="toast-wrap" id="toasts"></div>
+<div class="flash" id="flash"></div>
+<div class="modal" id="shotModal"><div class="in"><img id="shotImg" alt="Captura del simulador"><p>Si no se descargó sola: clic derecho (o mantener presionado) sobre la imagen → <b>Guardar imagen como…</b></p><button class="btn" id="shotClose">Cerrar</button></div></div>
+<div id="loader"><div class="in"><svg viewBox="0 0 90 90"><g class="w"><path d="M45 10 C56 26 64 37 64 49 a19 19 0 0 1 -38 0 C26 37 34 26 45 10Z" fill="#22d3ee"/></g><path d="M10 74 q8-6 16 0 t16 0 t16 0 t16 0 t16 0" stroke="#38bdf8" stroke-width="3" fill="none"/></svg><p>PURIFICANDO EL AGUA…</p></div></div>
+<div id="err"><div class="in"><div style="font-size:40px">⚠️</div><h2>NO SE PUDO INICIAR</h2><p>No se pudieron cargar las librerías 3D. Este simulador necesita conexión a internet la primera vez. Revisa la conexión y recarga la página.</p><button class="btn pri" onclick="location.reload()">Reintentar</button></div></div>
 
-<!-- Three.js desde CDN estable (scripts clásicos: también funciona abriendo el archivo localmente) -->
-<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/build/three.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/controls/OrbitControls.js"></script>
-<script src="app.js"></script>
+<script type="module">
+const $ = s => document.querySelector(s);
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const lerp=(a,b,t)=>a+(b-a)*t;
+const easeIO=t=>t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2;
+const smooth=t=>t*t*(3-2*t);
+const failTimer=setTimeout(()=>showErr(),20000);
+function showErr(){ $('#loader').style.display='none'; $('#err').style.display='grid'; }
+
+let THREE,OrbitControls,RoomEnvironment,EffectComposer,RenderPass,UnrealBloomPass,OutputPass;
+try{
+  THREE=await import('three');
+  ({OrbitControls}=await import('three/addons/controls/OrbitControls.js'));
+  ({RoomEnvironment}=await import('three/addons/environments/RoomEnvironment.js'));
+  ({EffectComposer}=await import('three/addons/postprocessing/EffectComposer.js'));
+  ({RenderPass}=await import('three/addons/postprocessing/RenderPass.js'));
+  ({UnrealBloomPass}=await import('three/addons/postprocessing/UnrealBloomPass.js'));
+  ({OutputPass}=await import('three/addons/postprocessing/OutputPass.js'));
+}catch(e){ clearTimeout(failTimer); showErr(); throw e; }
+
+/* ================= DATOS ================= */
+const PHASES=[
+ {name:'Captación',type:'FÍSICO',color:'#d39a55',sub:'Lago Alajuela → rejillas → bombas',
+  desc:'El agua cruda se toma del lago Alajuela, en la cuenca del río Chagres. Rejillas metálicas detienen ramas, hojas y basura grande, y grandes bombas la envían a la planta de Chilibre.',
+  tip:'el agua llega café y turbia: trae arcilla, arena fina, algas y microbios (puntos rojos) que no se ven a simple vista.'},
+ {name:'Coagulación',type:'QUÍMICO',color:'#d264f0',sub:'Al₂(SO₄)₃ + cal · mezcla rápida',
+  desc:'Se añade sulfato de aluminio y se mezcla muy rápido. Las partículas de arcilla tienen carga negativa y se repelen entre sí; el ion aluminio (Al³⁺) neutraliza esa carga y forma hidróxido de aluminio, una especie de “gelatina” que las atrapa. La cal ajusta el pH.',
+  tip:'caen gotas moradas (coagulante) y blancas (cal) al tanque donde la hélice gira a toda velocidad. Aquí ocurre una reacción química real.'},
+ {name:'Floculación',type:'FÍSICO',color:'#f0b43c',sub:'mezcla lenta · crecen los flóculos',
+  desc:'Paletas giran despacio para que las partículas ya desestabilizadas choquen y se peguen, formando flóculos grandes y pesados. Cada paleta gira más lento que la anterior para no romperlos.',
+  tip:'las bolitas cafés crecen mientras avanzan, y las paletas van cada vez más lento.'},
+ {name:'Sedimentación',type:'FÍSICO',color:'#9bb35a',sub:'la gravedad hunde los flóculos',
+  desc:'El agua pasa muy lenta por un tanque con placas inclinadas. Los flóculos pesados se hunden por gravedad y forman lodo en el fondo, que se purga. Por arriba sale agua mucho más clara. (El módulo nuevo de Chilibre usa además flotación con aire disuelto, DAF.)',
+  tip:'los flóculos bajan hacia el fondo y la capa de lodo café se acumula abajo.'},
+ {name:'Filtración',type:'FÍSICO',color:'#3fc3d9',sub:'antracita · arena · grava',
+  desc:'El agua baja por capas de antracita (carbón mineral), arena fina y grava. Los granos atrapan los flóculos pequeños y muchos microbios que no se hundieron. Es una separación física: no cambia la composición química del agua.',
+  tip:'por la ventana del filtro se ven las tres capas. Activa el corte para verlas mejor; muchos microbios rojos se quedan aquí.'},
+ {name:'Cloración y distribución',type:'QUÍMICO',color:'#8fe05a',sub:'Cl₂ + H₂O → HOCl · tanque · tuberías',
+  desc:'Se inyecta cloro, que con el agua forma ácido hipocloroso (HOCl) y destruye bacterias y virus. Queda un “cloro residual” que protege el agua en el tanque y en las tuberías hasta llegar a cada casa de la ciudad de Panamá.',
+  tip:'los microbios que quedaban desaparecen en el tanque con deflectores… solo si la dosis de cloro alcanza. Prueba bajar el cloro a 0.'}
+];
+const PARTS={
+ toma:{name:'Toma de agua cruda',type:'f',color:'#d39a55',desc:'Torre en el lago Alajuela con rejillas que detienen basura, ramas y peces. Es el primer filtro: solo físico.'},
+ bomba:{name:'Estación de bombeo',type:'f',color:'#f97316',desc:'Bombas con motores eléctricos impulsan miles de litros por segundo hacia la planta. Si una falla, baja la producción y los puntos altos se quedan sin agua.'},
+ sulfato:{name:'Tanque de sulfato de aluminio',type:'q',color:'#d264f0',desc:'Guarda la solución del coagulante Al₂(SO₄)₃. Una bomba dosificadora la añade según la turbiedad del agua que entra.'},
+ cal:{name:'Tanque de cal',type:'q',color:'#f1f5f9',desc:'Lechada de cal hidratada Ca(OH)₂. Sube el pH y aporta alcalinidad para que el coagulante funcione y el agua no corroa las tuberías.'},
+ mezcla:{name:'Mezcla rápida (coagulación)',type:'q',color:'#b65be0',desc:'Una hélice veloz reparte el coagulante en segundos. Aquí ocurre la reacción química que desestabiliza las partículas.'},
+ floc:{name:'Floculador',type:'f',color:'#f0b43c',desc:'Paletas lentas hacen que las partículas choquen y se unan en flóculos grandes. Es un proceso físico de mezcla.'},
+ sed:{name:'Sedimentador',type:'f',color:'#9bb35a',desc:'Tanque grande y tranquilo con placas inclinadas: los flóculos se hunden por gravedad. Separación física.'},
+ lodos:{name:'Lodos',type:'f',color:'#7c4a1e',desc:'Arcilla, materia orgánica y el aluminio atrapado se acumulan en el fondo y se purgan. Tratar estos lodos es uno de los límites del uso de coagulantes.'},
+ filtro:{name:'Filtro de antracita, arena y grava',type:'f',color:'#3fc3d9',desc:'Capas de granos de distinto tamaño atrapan partículas finas. Se limpian con retrolavado (agua a contracorriente).'},
+ cloro:{name:'Cilindros de cloro',type:'q',color:'#d9f04a',desc:'Cloro gaseoso a presión. Es tóxico: se maneja con detectores y equipos de seguridad. Se dosifica en mg/L.'},
+ contacto:{name:'Tanque de contacto',type:'q',color:'#8fe05a',desc:'Deflectores (paredes en zigzag) alargan el recorrido para que el cloro tenga tiempo de matar los microbios.'},
+ lab:{name:'Laboratorio de control',type:'f',color:'#60a5fa',desc:'Mide turbiedad, pH, cloro residual y bacterias varias veces al día para ajustar las dosis y cumplir la norma.'},
+ tanque:{name:'Tanque de almacenamiento',type:'f',color:'#38bdf8',desc:'Guarda agua tratada y da presión a la red. El cloro residual la mantiene protegida.'},
+ ciudad:{name:'Red de tuberías y ciudad',type:'f',color:'#a5b4fc',desc:'Kilómetros de tuberías llevan el agua a Panamá y San Miguelito, hasta el grifo de cada casa.'}
+};
+const ORDER=['toma','bomba','sulfato','cal','mezcla','floc','sed','lodos','filtro','cloro','contacto','lab','tanque','ciudad'];
+const PART_PHASE={toma:0,bomba:0,sulfato:1,cal:1,mezcla:1,floc:2,sed:3,lodos:3,filtro:4,cloro:5,contacto:5,lab:-1,tanque:5,ciudad:5};
+const COMPOUNDS=[
+ {name:'Sulfato de aluminio',f:'Al₂(SO₄)₃',color:'#d264f0',stage:'Coagulación · QUÍMICO',
+  role:'Coagulante. Aporta iones Al³⁺ que neutralizan la carga negativa de la arcilla y forman hidróxido de aluminio gelatinoso que atrapa partículas.',
+  eq:'Al₂(SO₄)₃ + 3 Ca(HCO₃)₂ → 2 Al(OH)₃↓ + 3 CaSO₄ + 6 CO₂',
+  lim:['Funciona bien solo en un rango de pH (≈ 6 a 7.5).','Consume alcalinidad y baja el pH: por eso se añade cal.','El exceso deja aluminio disuelto; la referencia práctica es ≤ 0.2 mg/L.','No elimina sales ni sustancias disueltas, y genera lodos que hay que tratar.']},
+ {name:'Cal hidratada',f:'Ca(OH)₂',color:'#e2e8f0',stage:'Coagulación / ajuste de pH · QUÍMICO',
+  role:'Base que neutraliza la acidez, sube el pH y aporta alcalinidad para el coagulante; también evita que el agua corroa las tuberías.',
+  eq:'CaO + H₂O → Ca(OH)₂     Ca(OH)₂ + 2 H⁺ → Ca²⁺ + 2 H₂O',
+  lim:['Si el pH pasa de 8.5 (límite de la norma) el agua puede dejar sarro.','A pH alto el cloro desinfecta peor.','Es un polvo cáustico: irrita piel y ojos.']},
+ {name:'Polímero floculante',f:'polielectrolito',color:'#f0b43c',stage:'Floculación · ayuda química',
+  role:'Cadenas largas de moléculas que “cosen” los flóculos pequeños y los hacen más grandes y pesados.',
+  eq:'microflóculos + polímero → flóculo grande',
+  lim:['Se usa en dosis muy pequeñas (décimas de mg/L).','Un exceso vuelve a dispersar las partículas.','Algunos contienen restos de monómeros que están regulados.']},
+ {name:'Cloro',f:'Cl₂',color:'#c7f050',stage:'Desinfección · QUÍMICO',
+  role:'Forma ácido hipocloroso (HOCl), que atraviesa la pared de bacterias y virus y los destruye. Deja un residual que protege la red.',
+  eq:'Cl₂ + H₂O → HOCl + HCl     HOCl ⇌ H⁺ + OCl⁻',
+  lim:['Pierde fuerza si el pH es alto (más OCl⁻, menos HOCl).','Casi no afecta a quistes de Cryptosporidium: por eso la filtración es indispensable.','Con materia orgánica forma trihalometanos (THM); demasiado cloro da sabor y olor.','Gas muy tóxico: manejo con seguridad estricta.']},
+ {name:'Fluorosilicato de sodio',f:'Na₂SiF₆',color:'#93c5fd',stage:'Fluoración · QUÍMICO (según la planta)',
+  role:'En algunas plantas se añade flúor en dosis muy bajas para prevenir caries. En Panamá se ha estudiado el agua fluorada de la capital.',
+  eq:'Na₂SiF₆ + 2 H₂O → 2 Na⁺ + 6 F⁻ + SiO₂ + 4 H⁺',
+  lim:['La OMS recomienda no pasar de 1.5 mg/L de fluoruro.','En exceso causa fluorosis (manchas en dientes).']},
+ {name:'Arena, antracita y grava',f:'medios filtrantes',color:'#3fc3d9',stage:'Filtración · FÍSICO (no es reactivo)',
+  role:'No reaccionan con el agua: atrapan partículas entre sus granos (cribado y adherencia). Sirven para contrastar con los procesos químicos.',
+  eq:'agua con flóculos finos → [antracita | arena | grava] → agua clara',
+  lim:['Se tapan: necesitan retrolavado frecuente.','No quitan sustancias disueltas (sales, químicos).','No garantizan eliminar todos los virus: hace falta cloro.']}
+];
+
+/* ================= ESTADO ================= */
+const state={progress:0,playing:true,flow:11,explode:0,explodeTarget:0,cut:false,labels:true,mode:false,follow:false,rot:false,
+ quality:1,sound:true,selected:null,hover:null,phase:0,liters:0,season:'seca',dAl:15,dCa:8,dCl:1.6,tween:null,camTween:null};
+
+/* ================= MODELO QUÍMICO ================= */
+function model(){
+  const raw=state.season==='seca'?8:60;
+  const opt=8+0.42*raw;           // dosis óptima de coagulante
+  const c=state.dAl;
+  const e=c<=0?0.15:0.15+0.82*Math.exp(-Math.pow((c-opt)/(0.55*opt),2)); // eficiencia de remoción
+  const Ts=raw*(1-e);
+  const Tf=Ts*0.06+0.05;
+  const Al=0.02+(c>0?0.03:0)+Math.max(0,c-opt*1.25)*0.012;
+  const pH1=7.3-0.02*c;
+  const pHf=clamp(pH1+0.045*state.dCa,4,11);
+  const demand=0.45+0.15*Tf+(state.season==='lluvia'?0.25:0);
+  const resid=Math.max(0,state.dCl-demand);
+  const effCl=pHf>8?resid*0.6:resid;
+  const coli=effCl>=0.25?'ausentes':(effCl>0.05?'pocos':'presentes');
+  const thm=state.dCl>3.5||(Tf>1&&state.dCl>2);
+  return {raw,opt,c,e,Ts,Tf,Al,pH1,pHf,demand,resid,coli,thm};
+}
+function readingsAt(p){
+  const m=model(); const ph=Math.floor(p/100); const k=(p%100)/100;
+  let T=m.raw,pH=7.3,Cl=0,B=1;
+  if(ph>=1){ pH=lerp(7.3,m.pHf,ph===1?k:1); }
+  if(ph===2) T=m.raw*(1-m.e*0.15*k);
+  if(ph===3) T=lerp(m.raw*(1-m.e*0.15),m.Ts,smooth(k));
+  if(ph===4){ T=lerp(m.Ts,m.Tf,smooth(k)); B=lerp(1,0.3,k); }
+  if(ph===5){ T=m.Tf; const kill=m.coli==='ausentes'?1:(m.coli==='pocos'?0.7:0); B=0.3*(1-kill*smooth(clamp(k*2.5,0,1))); Cl=lerp(state.dCl,m.resid,smooth(clamp(k*2,0,1))); }
+  return {T,pH,Cl,B};
+}
+
+/* ================= THREE: escena ================= */
+const canvas=$('#cv'), sceneEl=$('#scene');
+const renderer=new THREE.WebGLRenderer({canvas,antialias:true,preserveDrawingBuffer:true});
+renderer.toneMapping=THREE.ACESFilmicToneMapping; renderer.toneMappingExposure=0.92;
+renderer.shadowMap.enabled=true; renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+renderer.localClippingEnabled=true;
+const scene=new THREE.Scene();
+scene.fog=new THREE.Fog(0x062033,48,110);
+scene.background=(()=>{const c=document.createElement('canvas');c.width=16;c.height=512;const x=c.getContext('2d');const g=x.createLinearGradient(0,0,0,512);g.addColorStop(0,'#0d4463');g.addColorStop(.55,'#072638');g.addColorStop(1,'#030f18');x.fillStyle=g;x.fillRect(0,0,16,512);const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;return t;})();
+const pmrem=new THREE.PMREMGenerator(renderer);
+scene.environment=pmrem.fromScene(new RoomEnvironment(),0.04).texture;
+const camera=new THREE.PerspectiveCamera(38,1,0.1,400);
+camera.position.set(2,13,29);
+const homeCam=()=>{const a=sceneEl.clientWidth/Math.max(1,sceneEl.clientHeight);const f=Math.max(1,1.55/a);return [[1.5,15*f,37*f],[1.5,0.4,0]];};
+const controls=new OrbitControls(camera,canvas);
+controls.enableDamping=true; controls.dampingFactor=0.07; controls.target.set(1.5,0.6,0);
+controls.maxDistance=80; controls.minDistance=6; controls.maxPolarAngle=Math.PI*0.495;
+
+// luces
+scene.add(new THREE.HemisphereLight(0xbfe9ff,0x10243a,0.55));
+const key=new THREE.DirectionalLight(0xffe2bf,2.1); key.position.set(14,24,16); key.castShadow=true;
+key.shadow.camera.left=-26;key.shadow.camera.right=26;key.shadow.camera.top=16;key.shadow.camera.bottom=-16;key.shadow.camera.far=70;key.shadow.bias=-0.0004;
+scene.add(key);
+const rim=new THREE.DirectionalLight(0x5ab8ff,1.3); rim.position.set(-18,10,-18); scene.add(rim);
+const fill=new THREE.DirectionalLight(0xffb27a,0.45); fill.position.set(-10,6,18); scene.add(fill);
+const evLight=new THREE.PointLight(0xffffff,0,9,2); scene.add(evLight);
+const dropLight=new THREE.PointLight(0x7dd3fc,2.2,6,2); scene.add(dropLight);
+
+// materiales
+const allMats=[], clipMats=[];
+const cutPlane=new THREE.Plane(new THREE.Vector3(0,0,-1),0.02);
+function M(color,o={}){
+  const m=new THREE.MeshStandardMaterial({color,roughness:o.r??0.6,metalness:o.m??0.1,transparent:!!o.t,opacity:o.t??1,emissive:o.e??0x000000,emissiveIntensity:o.ei??1,side:o.side??THREE.FrontSide,depthWrite:o.t?(o.dw??false):true});
+  m.userData.baseE=m.emissive.clone(); m.userData.baseEI=m.emissiveIntensity;
+  allMats.push(m); if(o.clip) clipMats.push(m); return m;
+}
+const concrete=()=>M(0xaebcc4,{r:0.85,m:0.02,clip:true});
+
+// plataforma
+const world=new THREE.Group(); scene.add(world);
+const plat=new THREE.Mesh(new THREE.BoxGeometry(41,0.5,15),M(0x123247,{r:0.9})); plat.position.y=-0.25; plat.receiveShadow=true; world.add(plat);
+const ped=new THREE.Mesh(new THREE.BoxGeometry(43,0.8,17),M(0x0a1f2e,{r:1})); ped.position.y=-0.9; world.add(ped);
+const ringMat=M(0x22d3ee,{e:0x22d3ee,ei:1.6});
+[[0,7.55,41.4,0.12],[0,-7.55,41.4,0.12]].forEach(([x,z,w,d])=>{const b=new THREE.Mesh(new THREE.BoxGeometry(w,0.08,d),ringMat);b.position.set(x,0.02,z);world.add(b);});
+[[20.65],[-20.65]].forEach(([x])=>{const b=new THREE.Mesh(new THREE.BoxGeometry(0.12,0.08,15.2),ringMat);b.position.set(x,0.02,0);world.add(b);});
+const grid=new THREE.GridHelper(40,40,0x1d5774,0x143a50); grid.position.y=0.005; grid.material.transparent=true; grid.material.opacity=0.35; world.add(grid);
+
+const plant=new THREE.Group(); plant.position.x=-2.6; world.add(plant);
+
+/* ===== registro de piezas ===== */
+const parts={};
+function part(id,base,off){
+  const g=new THREE.Group(); g.position.copy(base); g.userData={partId:id,base:base.clone(),off:off.clone(),mats:new Set()};
+  plant.add(g); parts[id]=g; return g;
+}
+function add(g,geo,mat,x=0,y=0,z=0,cast=true){
+  const m=new THREE.Mesh(geo,mat); m.position.set(x,y,z); m.castShadow=cast; m.receiveShadow=true; g.add(m); return m;
+}
+function finalize(){
+  for(const id in parts){ const g=parts[id]; g.traverse(o=>{ if(o.isMesh){ o.userData.partId=id; (Array.isArray(o.material)?o.material:[o.material]).forEach(mm=>g.userData.mats.add(mm)); } }); }
+}
+function openBox(g,w,h,d,mat,t=0.14,glassFront=null){
+  add(g,new THREE.BoxGeometry(w,t,d),mat,0,t/2,0);
+  add(g,new THREE.BoxGeometry(t,h,d),mat,-w/2+t/2,h/2,0);
+  add(g,new THREE.BoxGeometry(t,h,d),mat,w/2-t/2,h/2,0);
+  add(g,new THREE.BoxGeometry(w,h,t),mat,0,h/2,-d/2+t/2);
+  add(g,new THREE.BoxGeometry(w,h,t),glassFront||mat,0,h/2,d/2-t/2,!glassFront);
+}
+const waterMats={};
+function waterMat(k,c,op=0.82){ const m=M(c,{r:0.08,m:0.1,t:op,dw:false}); waterMats[k]=m; return m; }
+
+/* --- TOMA --- */
+const gToma=part('toma',new THREE.Vector3(-12.6,0,0),new THREE.Vector3(-2,1.2,0));
+const lake=add(gToma,new THREE.BoxGeometry(4.2,0.35,9),waterMat('lake',0x7b5a2e,0.9),0.2,0.18,0,false);
+add(gToma,new THREE.BoxGeometry(4.6,0.12,9.4),M(0x3a2c1c,{r:1}),0.2,0.05,0,false);
+const tower=new THREE.Group(); gToma.add(tower); tower.position.set(0.7,0,0);
+add(tower,new THREE.CylinderGeometry(0.55,0.65,2.4,20),M(0xb7c2c8,{r:0.8}),0,1.2,0);
+add(tower,new THREE.CylinderGeometry(0.7,0.7,0.16,20),M(0x8b98a1,{r:0.6,m:0.4}),0,2.45,0);
+for(let i=0;i<10;i++){const a=i/10*Math.PI*2; add(tower,new THREE.BoxGeometry(0.05,0.6,0.05),M(0x475569,{m:0.8,r:0.35}),Math.cos(a)*0.62,0.55,Math.sin(a)*0.62);}
+// árboles de la cuenca
+const treeM=M(0x1f7a4d,{r:0.9}), trunkM=M(0x5b3b22,{r:1});
+[[-1.2,-3.8],[-1.4,3.6],[-1.6,-1.8],[-1.5,1.6],[0.9,-4],[1.4,3.9]].forEach(([x,z],i)=>{const s=0.8+(i%3)*0.18; add(gToma,new THREE.CylinderGeometry(0.06,0.09,0.5,6),trunkM,x,0.4,z); add(gToma,new THREE.ConeGeometry(0.45*s,1.2*s,8),treeM,x,0.65+0.6*s,z);});
+
+/* --- BOMBA --- */
+const gBomba=part('bomba',new THREE.Vector3(-9.5,0,0),new THREE.Vector3(-1.2,1.8,1.6));
+add(gBomba,new THREE.BoxGeometry(1.6,0.25,1.2),M(0x334155,{r:0.7}),0,0.12,0);
+add(gBomba,new THREE.CylinderGeometry(0.34,0.34,0.9,20),M(0xf97316,{r:0.4,m:0.5}),0,0.62,-0.2).rotation.x=Math.PI/2;
+add(gBomba,new THREE.CylinderGeometry(0.45,0.45,0.3,24),M(0x1e3a5f,{r:0.35,m:0.7,t:0.55}),0,0.62,0.42).rotation.x=Math.PI/2;
+const impeller=new THREE.Group(); impeller.position.set(0,0.62,0.42); gBomba.add(impeller);
+for(let i=0;i<5;i++){const b=add(impeller,new THREE.BoxGeometry(0.06,0.38,0.12),M(0xe2e8f0,{m:0.8,r:0.25}),0,0,0,false); b.rotation.z=i/5*Math.PI*2; b.position.set(Math.sin(i/5*Math.PI*2)*0.18,Math.cos(i/5*Math.PI*2)*0.18,0);}
+
+/* --- DOSIFICACIÓN --- */
+const gSulf=part('sulfato',new THREE.Vector3(-7.4,0,-2.3),new THREE.Vector3(-0.8,3,-1.2));
+const gCal=part('cal',new THREE.Vector3(-5.6,0,-2.3),new THREE.Vector3(0.8,3.4,-1.2));
+function doser(g,liq,label){
+  const legM=M(0x64748b,{m:0.7,r:0.4});
+  [[-0.35,-0.35],[0.35,-0.35],[-0.35,0.35],[0.35,0.35]].forEach(([x,z])=>add(g,new THREE.CylinderGeometry(0.04,0.04,1.9,8),legM,x,0.95,z));
+  add(g,new THREE.CylinderGeometry(0.5,0.5,0.95,24),M(0xdbeafe,{r:0.15,m:0.05,t:0.35}),0,2.4,0,false);
+  add(g,new THREE.CylinderGeometry(0.45,0.45,0.75,24),M(liq,{r:0.3,e:liq,ei:0.25}),0,2.33,0);
+  add(g,new THREE.CylinderGeometry(0.52,0.52,0.06,24),M(0x94a3b8,{m:0.6,r:0.4}),0,2.9,0);
+}
+doser(gSulf,0xb15ae0); doser(gCal,0xf8fafc);
+
+/* --- MEZCLA RÁPIDA --- */
+const gMez=part('mezcla',new THREE.Vector3(-6.5,0,0),new THREE.Vector3(0,1.6,1.4));
+const tankM=concrete();
+add(gMez,new THREE.CylinderGeometry(1.05,1.05,1.6,32,1,true),M(0xc9d3d9,{r:0.85,clip:true,side:THREE.DoubleSide}),0,0.8,0);
+add(gMez,new THREE.CylinderGeometry(1.05,1.05,0.1,32),tankM,0,0.05,0);
+add(gMez,new THREE.CylinderGeometry(0.98,0.98,1.3,32),waterMat('mez',0x86643c),0,0.75,0,false);
+add(gMez,new THREE.BoxGeometry(2.4,0.12,0.25),M(0x475569,{m:0.6,r:0.4}),0,1.72,0);
+add(gMez,new THREE.CylinderGeometry(0.22,0.22,0.45,16),M(0xd264f0,{m:0.4,r:0.4}),0,2.0,0);
+const mixer=new THREE.Group(); mixer.position.set(0,0.5,0); gMez.add(mixer);
+add(mixer,new THREE.CylinderGeometry(0.04,0.04,1.3,8),M(0xe2e8f0,{m:0.9,r:0.2}),0,0.62,0,false);
+for(let i=0;i<4;i++){const b=add(mixer,new THREE.BoxGeometry(0.55,0.05,0.14),M(0xe2e8f0,{m:0.9,r:0.2}),0,0,0,false); b.rotation.y=i*Math.PI/2; b.position.set(Math.cos(i*Math.PI/2)*0.28,0,-Math.sin(i*Math.PI/2)*0.28); b.rotation.x=0.4;}
+// tubos de dosificación
+const doseTubeM=M(0xc084fc,{r:0.4,m:0.2});
+function tube(pts,r,mat,parent=plant){const c=new THREE.CatmullRomCurve3(pts.map(p=>new THREE.Vector3(...p)));const m=new THREE.Mesh(new THREE.TubeGeometry(c,40,r,10,false),mat);m.castShadow=true;parent.add(m);return m;}
+
+/* --- FLOCULADOR --- */
+const gFloc=part('floc',new THREE.Vector3(-2.6,0,0),new THREE.Vector3(0,2.2,-1));
+openBox(gFloc,3.4,1.5,2.6,concrete());
+add(gFloc,new THREE.BoxGeometry(3.15,1.2,2.35),waterMat('floc',0x7f6a46),0,0.72,0,false);
+const paddles=[];
+[-1.05,0,1.05].forEach((x,i)=>{const p=new THREE.Group();p.position.set(x,0.75,0);gFloc.add(p);
+ add(p,new THREE.CylinderGeometry(0.05,0.05,2.45,8),M(0x94a3b8,{m:0.8,r:0.3}),0,0,0,false).rotation.x=Math.PI/2;
+ for(let k=0;k<4;k++){const b=add(p,new THREE.BoxGeometry(0.08,0.45,1.9),M(0xf0b43c,{r:0.5,m:0.2}),0,0,0,false); const a=k*Math.PI/2; b.position.set(Math.cos(a)*0.32,Math.sin(a)*0.32,0); b.rotation.z=a;}
+ p.userData.speed=[1.3,0.85,0.5][i]; paddles.push(p);});
+
+/* --- SEDIMENTADOR --- */
+const gSed=part('sed',new THREE.Vector3(2.4,0,0),new THREE.Vector3(0,2.6,1.2));
+openBox(gSed,4.6,1.7,2.8,concrete());
+add(gSed,new THREE.BoxGeometry(4.35,1.42,2.55),waterMat('sed',0x6f8a78,0.7),0,0.82,0,false);
+const plateM=M(0xe0f2fe,{r:0.3,m:0.1,t:0.55});
+for(let i=0;i<10;i++){const pl=add(gSed,new THREE.BoxGeometry(0.03,0.9,2.4),plateM,-1.3+i*0.32,0.95,0,false); pl.rotation.z=-0.52;}
+const troughM=M(0x94a3b8,{m:0.5,r:0.4});
+[-0.7,0.7].forEach(z=>add(gSed,new THREE.BoxGeometry(4.2,0.12,0.18),troughM,0,1.62,z));
+const gLod=part('lodos',new THREE.Vector3(2.4,0,0),new THREE.Vector3(0,-0.2,3.2));
+const sludge=add(gLod,new THREE.BoxGeometry(4.3,0.2,2.5),M(0x6b4423,{r:1,e:0x2a1405,ei:0.4}),0,0.24,0,false);
+tube([[2.25,0.25,-0.8],[2.7,0.25,-0.8],[2.9,0.25,-2.2],[2.9,0.15,-4.5]],0.08,M(0x7c4a1e,{r:0.6,m:0.3}),gLod);
+
+/* --- FILTRO --- */
+const gFil=part('filtro',new THREE.Vector3(7.3,0,0),new THREE.Vector3(0,2.2,-1.3));
+const glassM=M(0xbfe9ff,{r:0.05,m:0.0,t:0.18,clip:true});
+openBox(gFil,2.7,2.5,2.6,concrete(),0.14,glassM);
+add(gFil,new THREE.BoxGeometry(2.45,0.45,2.35),M(0x8b8f97,{r:1}),0,0.38,0);
+add(gFil,new THREE.BoxGeometry(2.45,0.6,2.35),M(0xd8b47a,{r:1}),0,0.9,0);
+add(gFil,new THREE.BoxGeometry(2.45,0.4,2.35),M(0x1f2125,{r:0.7,m:0.2}),0,1.4,0);
+add(gFil,new THREE.BoxGeometry(2.45,0.6,2.35),waterMat('fil',0x63a9b9,0.7),0,1.9,0,false);
+const pebM=M(0x9ca3af,{r:0.9});
+const peb=new THREE.InstancedMesh(new THREE.IcosahedronGeometry(0.07,0),pebM,90); const dm=new THREE.Object3D();
+for(let i=0;i<90;i++){dm.position.set((Math.random()-.5)*2.3,0.2+Math.random()*0.35,(Math.random()-.5)*2.2);dm.rotation.set(Math.random()*3,Math.random()*3,0);dm.scale.setScalar(0.7+Math.random()*0.8);dm.updateMatrix();peb.setMatrixAt(i,dm.matrix);} gFil.add(peb);
+
+/* --- CLORO --- */
+const gClo=part('cloro',new THREE.Vector3(9.7,0,-2.6),new THREE.Vector3(0.6,2.8,-1.4));
+for(let i=0;i<3;i++){const x=-0.55+i*0.55; add(gClo,new THREE.CylinderGeometry(0.22,0.22,1.1,18),M(0xe5d34a,{r:0.35,m:0.5}),x,0.6,0); add(gClo,new THREE.SphereGeometry(0.22,16,10,0,Math.PI*2,0,Math.PI/2),M(0xe5d34a,{r:0.35,m:0.5}),x,1.15,0); add(gClo,new THREE.CylinderGeometry(0.05,0.05,0.14,8),M(0x334155,{m:0.8}),x,1.42,0);}
+add(gClo,new THREE.BoxGeometry(1.9,0.12,0.8),M(0x334155,{r:0.7}),0,0.06,0);
+
+/* --- CONTACTO --- */
+const gCon=part('contacto',new THREE.Vector3(10.9,0,0),new THREE.Vector3(0.4,2.3,1.4));
+openBox(gCon,2.4,1.35,2.2,concrete());
+add(gCon,new THREE.BoxGeometry(2.15,1.05,1.95),waterMat('con',0x4cc3e6,0.6),0,0.62,0,false);
+[-0.55,0,0.55].forEach((x,i)=>add(gCon,new THREE.BoxGeometry(0.06,1.2,1.4),M(0xcbd5e1,{r:0.7,clip:true}),x,0.65,i%2?0.4:-0.4));
+
+/* --- LAB --- */
+const gLab=part('lab',new THREE.Vector3(5.2,0,-4.4),new THREE.Vector3(0,1.6,-1.2));
+add(gLab,new THREE.BoxGeometry(2.6,1.3,1.6),M(0xf1f5f9,{r:0.7}),0,0.65,0);
+add(gLab,new THREE.BoxGeometry(2.8,0.12,1.8),M(0x1e40af,{r:0.5}),0,1.36,0);
+const winM=M(0x7dd3fc,{e:0x38bdf8,ei:1.2});
+[-0.75,0,0.75].forEach(x=>add(gLab,new THREE.BoxGeometry(0.5,0.4,0.03),winM,x,0.8,0.81,false));
+add(gLab,new THREE.CylinderGeometry(0.03,0.03,0.7,6),M(0x94a3b8,{m:0.8}),1.0,1.75,0.3);
+const labBeacon=add(gLab,new THREE.SphereGeometry(0.08,12,8),M(0x22d3ee,{e:0x22d3ee,ei:3}),1.0,2.12,0.3,false);
+
+/* --- TANQUE --- */
+const gTan=part('tanque',new THREE.Vector3(14.6,0,0),new THREE.Vector3(1,2.6,0));
+add(gTan,new THREE.CylinderGeometry(1.45,1.45,3.2,40,1,true),M(0xd5dde2,{r:0.8,clip:true,side:THREE.DoubleSide}),0,1.6,0);
+add(gTan,new THREE.SphereGeometry(1.47,32,12,0,Math.PI*2,0,Math.PI/2.6),M(0x93c5fd,{r:0.5,m:0.3,clip:true,side:THREE.DoubleSide}),0,3.0,0).scale.y=0.45;
+const tanWater=add(gTan,new THREE.CylinderGeometry(1.38,1.38,2.6,40),waterMat('tan',0x38bdf8,0.6),0,1.35,0,false);
+add(gTan,new THREE.CylinderGeometry(1.5,1.5,0.1,40),M(0x94a3b8,{r:0.6}),0,0.05,0);
+
+/* --- CIUDAD --- */
+const gCity=part('ciudad',new THREE.Vector3(18.6,0,0),new THREE.Vector3(1.6,1.2,0));
+const winTex=(()=>{const c=document.createElement('canvas');c.width=64;c.height=128;const x=c.getContext('2d');x.fillStyle='#1b2b44';x.fillRect(0,0,64,128);for(let r=0;r<16;r++)for(let k=0;k<4;k++){x.fillStyle=Math.random()<.6?'#ffd98a':'#2c4466';x.fillRect(6+k*14,5+r*7.6,8,4.5);}const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;return t;})();
+const bldM=new THREE.MeshStandardMaterial({map:winTex,emissiveMap:winTex,emissive:0xffffff,emissiveIntensity:0.55,roughness:0.6,metalness:0.2}); bldM.userData.baseE=bldM.emissive.clone(); bldM.userData.baseEI=0.55; allMats.push(bldM);
+[[0.2,-2.6,0.9,4.2],[1.3,-1.6,0.8,3.2],[-0.3,-0.9,0.7,2.4],[1.1,0.1,0.9,5.0],[0.0,1.6,0.8,2.8],[1.4,2.6,0.7,3.6],[-0.4,3.2,0.6,1.8]].forEach(([x,z,w,h])=>add(gCity,new THREE.BoxGeometry(w,h,w),bldM,x,h/2,z));
+const houseM=M(0xfde68a,{r:0.8}), roofM=M(0xb45309,{r:0.7});
+[[-1.4,-2.4],[-1.5,-0.6],[-1.3,1.2],[-1.6,2.8]].forEach(([x,z])=>{add(gCity,new THREE.BoxGeometry(0.6,0.45,0.55),houseM,x,0.23,z);const r=add(gCity,new THREE.ConeGeometry(0.48,0.35,4),roofM,x,0.63,z);r.rotation.y=Math.PI/4;});
+// grifo
+const faucet=new THREE.Group(); faucet.position.set(-1.9,0,1.9); gCity.add(faucet);
+const chrome=M(0xe5e7eb,{m:1,r:0.15});
+add(faucet,new THREE.CylinderGeometry(0.06,0.06,1.0,12),chrome,0,0.5,0);
+add(faucet,new THREE.CylinderGeometry(0.05,0.05,0.4,12),chrome,0.18,1.0,0).rotation.z=Math.PI/2;
+add(faucet,new THREE.CylinderGeometry(0.05,0.05,0.14,12),chrome,0.36,0.93,0);
+add(faucet,new THREE.CylinderGeometry(0.16,0.12,0.25,16),M(0x7dd3fc,{r:0.05,t:0.45}),0.36,0.13,0,false);
+
+finalize();
+
+/* --- tuberías fijas --- */
+const pipeM=M(0x5b7a90,{r:0.35,m:0.7}); const pipes=new THREE.Group(); plant.add(pipes);
+const pipeMats=[pipeM,doseTubeM];
+tube([[-11.9,0.5,0],[-10.9,0.5,0],[-10.1,0.62,0]],0.13,pipeM,pipes);
+tube([[-9.5,0.62,-0.6],[-9.0,0.7,-0.9],[-8.2,1.6,-0.6],[-7.3,1.85,-0.2],[-6.9,1.45,0]],0.13,pipeM,pipes);
+tube([[-5.45,1.1,0],[-4.6,1.25,0],[-4.2,1.25,0]],0.12,pipeM,pipes);
+tube([[-0.9,1.15,0],[-0.45,1.2,0],[-0.1,1.2,0]],0.12,pipeM,pipes);
+tube([[4.7,1.5,0],[5.4,1.9,0],[5.95,2.1,0]],0.12,pipeM,pipes);
+tube([[8.65,0.3,0],[9.2,0.35,0.2],[9.7,0.9,0]],0.12,pipeM,pipes);
+tube([[12.1,1.0,0],[12.8,1.6,0],[13.2,2.9,0]],0.12,pipeM,pipes);
+tube([[15.9,0.3,0],[16.6,0.18,0],[17.2,0.18,0.8],[16.8,0.18,1.9],[16.75,0.4,1.9]],0.11,pipeM,pipes);
+tube([[-7.4,2.0,-2.3],[-7.1,1.95,-1.2],[-6.75,1.9,-0.35]],0.035,doseTubeM,pipes);
+tube([[-5.6,2.0,-2.3],[-5.9,1.95,-1.2],[-6.25,1.9,-0.35]],0.035,M(0xe2e8f0,{r:0.4}),pipes);
+tube([[9.7,0.4,-2.15],[10.2,0.4,-1.6],[10.4,0.9,-0.6]],0.04,M(0xd9f04a,{r:0.4}),pipes);
+
+/* ===== recorrido del agua ===== */
+const PATH=[[-12.6,0.3,-1.5],[-12.4,0.35,0],[-11.9,0.5,0],[-10.5,0.55,0],[-9.5,0.62,0.3],[-8.6,1.3,-0.7],[-7.4,1.8,-0.3],[-6.6,1.2,0],[-6.4,0.6,0.3],[-5.6,1.0,0],[-4.4,1.2,0],[-3.6,0.9,0.3],[-2.6,0.6,-0.3],[-1.5,0.9,0.3],[-0.4,1.15,0],[0.6,1.2,0.2],[2.4,1.05,-0.3],[4.2,1.35,0.2],[5.5,1.95,0],[7.2,2.0,0],[7.3,1.2,0.2],[7.3,0.4,-0.2],[8.6,0.3,0],[9.7,0.9,0],[10.2,0.7,-0.6],[10.9,0.7,0.6],[11.6,0.7,-0.5],[12.3,1.1,0],[13.3,2.6,0],[14.6,2.2,0],[14.6,0.6,0],[16.0,0.3,0],[17.0,0.2,0.6],[16.8,0.3,1.9],[16.75,0.95,1.9]];
+const curve=new THREE.CatmullRomCurve3(PATH.map(p=>new THREE.Vector3(...p)),false,'centripetal');
+const LUTN=1500, LUT=[]; for(let i=0;i<=LUTN;i++) LUT.push(curve.getPointAt(i/LUTN));
+const tAtX=x=>{for(let i=0;i<=LUTN;i++) if(LUT[i].x>=x) return i/LUTN; return 1;};
+const PT=[0,tAtX(-8.0),tAtX(-4.9),tAtX(-0.6),tAtX(5.0),tAtX(8.65),1];
+function tFromProgress(p){const i=Math.floor(p/100)%6,k=(p%100)/100;return lerp(PT[i],PT[i+1],k);}
+const lutPos=t=>LUT[Math.round(clamp(t,0,1)*LUTN)];
+function spreadAt(x){ if(x>-7.5&&x<-5.6) return 0.8; if(x>-4.2&&x<-0.9) return 1.0; if(x>0.2&&x<4.6) return 1.1; if(x>6.1&&x<8.4) return 1.0; if(x>9.8&&x<12.0) return 0.85; if(x>13.4&&x<15.8) return 1.1; if(x<-11.5) return 1.4; return 0.15; }
+
+// textura de punto
+const dotTex=(()=>{const c=document.createElement('canvas');c.width=c.height=64;const x=c.getContext('2d');const g=x.createRadialGradient(32,32,0,32,32,32);g.addColorStop(0,'rgba(255,255,255,1)');g.addColorStop(.45,'rgba(255,255,255,.7)');g.addColorStop(1,'rgba(255,255,255,0)');x.fillStyle=g;x.fillRect(0,0,64,64);return new THREE.CanvasTexture(c);})();
+
+const STAGE_COL=[new THREE.Color(0x9a6a33),new THREE.Color(0xa77c4c),new THREE.Color(0x8b7a52),new THREE.Color(0x6ea39a),new THREE.Color(0x58b9d6),new THREE.Color(0x46c3ff)];
+function waterColorAt(t,m){
+  let i=0; for(;i<5;i++) if(t<PT[i+1]) break;
+  const k=clamp((t-PT[i])/(PT[i+1]-PT[i]),0,1);
+  const raw=new THREE.Color(state.season==='lluvia'?0x7a4a1c:0x9a6a33);
+  const sedEnd=new THREE.Color(0x6ea39a).lerp(raw,clamp(m.Ts/m.raw,0,1)*0.85);
+  const filEnd=new THREE.Color(0x46c3ff).lerp(new THREE.Color(0x9a6a33),clamp(m.Tf/4,0,0.8));
+  const E=[raw,raw,raw.clone().lerp(new THREE.Color(0xa77c4c),0.35),raw.clone().lerp(new THREE.Color(0x8b7a52),0.5),sedEnd,filEnd,filEnd.clone().lerp(new THREE.Color(0x7dd3fc),0.25)];
+  return E[i].clone().lerp(E[i+1],k);
+}
+
+/* ===== sistemas de partículas ===== */
+let flow=null, microbes=null, flocs=null, drops=[], bubbles=null, tapDrops=[], dust=null;
+const QCOUNT=[[350,40,60],[650,60,100],[1000,80,140]];
+function disposeObj(o){ if(!o) return; o.parent&&o.parent.remove(o); o.geometry&&o.geometry.dispose(); o.material&&o.material.dispose&&o.material.dispose(); }
+function buildParticles(){
+  [flow&&flow.obj,microbes&&microbes.obj,flocs&&flocs.obj,bubbles&&bubbles.obj,dust].forEach(disposeObj);
+  const [nW,nB,nF]=QCOUNT[state.quality];
+  // agua
+  {const g=new THREE.BufferGeometry(); const pos=new Float32Array(nW*3), col=new Float32Array(nW*3);
+   g.setAttribute('position',new THREE.BufferAttribute(pos,3)); g.setAttribute('color',new THREE.BufferAttribute(col,3));
+   const mat=new THREE.PointsMaterial({size:0.16,map:dotTex,vertexColors:true,transparent:true,opacity:0.95,depthWrite:false});
+   const obj=new THREE.Points(g,mat); obj.frustumCulled=false; plant.add(obj);
+   const P=[]; for(let i=0;i<nW;i++) P.push({t:Math.random(),j:new THREE.Vector3(Math.random()-.5,Math.random()-.5,Math.random()-.5),v:0.85+Math.random()*0.3});
+   flow={obj,P,pos,col};}
+  // microbios
+  {const g=new THREE.BufferGeometry(); const pos=new Float32Array(nB*3); g.setAttribute('position',new THREE.BufferAttribute(pos,3));
+   const mat=new THREE.PointsMaterial({size:0.22,map:dotTex,color:0xff4d6d,transparent:true,depthWrite:false});
+   const obj=new THREE.Points(g,mat); obj.frustumCulled=false; plant.add(obj);
+   const P=[]; for(let i=0;i<nB;i++) P.push({t:Math.random(),alive:true,j:new THREE.Vector3(Math.random()-.5,Math.random()-.5,Math.random()-.5),v:0.9+Math.random()*0.2});
+   microbes={obj,P,pos};}
+  // flóculos
+  {const geo=new THREE.IcosahedronGeometry(0.06,0); const mat=new THREE.MeshStandardMaterial({color:0x8a5a2b,roughness:1});
+   const obj=new THREE.InstancedMesh(geo,mat,nF); obj.frustumCulled=false; plant.add(obj);
+   const P=[]; for(let i=0;i<nF;i++) P.push(newFloc(true)); flocs={obj,P};}
+  // burbujas de cloro
+  {const n=Math.round(nF*0.6); const g=new THREE.BufferGeometry(); const pos=new Float32Array(n*3); g.setAttribute('position',new THREE.BufferAttribute(pos,3));
+   const obj=new THREE.Points(g,new THREE.PointsMaterial({size:0.1,map:dotTex,color:0xd9f99d,transparent:true,depthWrite:false})); obj.frustumCulled=false; plant.add(obj);
+   const P=[]; for(let i=0;i<n;i++) P.push({x:9.9+Math.random()*2,y:Math.random(),z:(Math.random()-.5)*1.8,s:0.3+Math.random()*0.5}); bubbles={obj,P,pos};}
+  // polvo
+  {const n=[80,140,220][state.quality]; const g=new THREE.BufferGeometry(); const pos=new Float32Array(n*3);
+   for(let i=0;i<n;i++){pos[i*3]=(Math.random()-.5)*44;pos[i*3+1]=Math.random()*12;pos[i*3+2]=(Math.random()-.5)*20;}
+   g.setAttribute('position',new THREE.BufferAttribute(pos,3));
+   dust=new THREE.Points(g,new THREE.PointsMaterial({size:0.07,map:dotTex,color:0x9ad8ff,transparent:true,opacity:0.45,depthWrite:false})); scene.add(dust);}
+}
+function newFloc(rand){return {x:-4.1+(rand?Math.random()*8.3:Math.random()*0.4),y:0.3+Math.random()*1.0,z:(Math.random()-.5)*2.1,vy:0,s:0.5};}
+// gotas de dosificación
+const dropGeo=new THREE.SphereGeometry(0.05,10,8);
+const dropAlM=new THREE.MeshStandardMaterial({color:0xd264f0,emissive:0xd264f0,emissiveIntensity:1.2});
+const dropCaM=new THREE.MeshStandardMaterial({color:0xffffff,emissive:0xffffff,emissiveIntensity:0.6});
+for(let i=0;i<14;i++){const isAl=i<7;const m=new THREE.Mesh(dropGeo,isAl?dropAlM:dropCaM);plant.add(m);drops.push({m,isAl,y:1.9-Math.random()*0.6,x:isAl?-6.75:-6.25,z:-0.35});}
+const tapM=new THREE.MeshStandardMaterial({color:0x7dd3fc,emissive:0x38bdf8,emissiveIntensity:0.8,transparent:true,opacity:0.9});
+for(let i=0;i<6;i++){const m=new THREE.Mesh(dropGeo,tapM);plant.add(m);tapDrops.push({m,y:Math.random()});}
+// gota guía
+const guide=new THREE.Mesh(new THREE.SphereGeometry(0.2,24,16),new THREE.MeshStandardMaterial({color:0xe0f7ff,emissive:0x7dd3fc,emissiveIntensity:2.4,roughness:0.1}));
+plant.add(guide);
+// destello de evento
+const burst=new THREE.Mesh(new THREE.SphereGeometry(1,24,16),new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:0,depthWrite:false}));
+plant.add(burst); let burstT=0;
+// placas de etapa / modo
+const plates={};
+const FOOT={toma:[3,4],bomba:[1.9,1.6],sulfato:[1.2,1.2],cal:[1.2,1.2],mezcla:[2.5,2.5],floc:[3.8,3],sed:[5,3.2],lodos:[0,0],filtro:[3.1,3],cloro:[2.1,1],contacto:[2.8,2.6],lab:[3,2],tanque:[3.3,3.3],ciudad:[4.4,7]};
+for(const id of ORDER){const [w,d]=FOOT[id]; if(!w) continue; const m=new THREE.Mesh(new THREE.PlaneGeometry(w,d),new THREE.MeshBasicMaterial({color:0x22d3ee,transparent:true,opacity:0,depthWrite:false}));
+ m.rotation.x=-Math.PI/2; m.position.y=0.03; parts[id].add(m); plates[id]=m; m.userData.skipPick=true;}
+
+/* ===== postproceso / calidad ===== */
+let composer=null, bloom=null;
+function applyQuality(){
+  const q=state.quality;
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,[1,1.5,2][q]));
+  renderer.shadowMap.enabled=q>0; key.castShadow=q>0;
+  if(key.shadow.map){key.shadow.map.dispose();key.shadow.map=null;}
+  key.shadow.mapSize.set(q===2?2048:1024,q===2?2048:1024);
+  allMats.forEach(m=>m.needsUpdate=true);
+  if(composer){composer.dispose&&composer.dispose(); composer=null;}
+  if(q>0){ composer=new EffectComposer(renderer); composer.addPass(new RenderPass(scene,camera));
+    bloom=new UnrealBloomPass(new THREE.Vector2(256,256),0.42,0.55,0.78); composer.addPass(bloom); composer.addPass(new OutputPass()); }
+  buildParticles(); resize();
+}
+function resize(){
+  const w=sceneEl.clientWidth,h=sceneEl.clientHeight; if(!w||!h) return;
+  renderer.setSize(w,h,false); camera.aspect=w/h; camera.updateProjectionMatrix();
+  if(composer){composer.setPixelRatio(renderer.getPixelRatio());composer.setSize(w,h);}
+}
+new ResizeObserver(resize).observe(sceneEl);
+
+/* ===== etiquetas ===== */
+const labelsEl=$('#labels'), linesSvg=$('#lines'); const LBL={};
+const LOFF={toma:[0,-70,2.8],bomba:[0,-54,1.4],sulfato:[-30,-40,3.2],cal:[30,-58,3.2],mezcla:[0,-46,2.3],floc:[0,-60,1.7],sed:[0,-70,1.9],lodos:[60,34,0.25],filtro:[0,-58,2.6],cloro:[-10,-44,1.6],contacto:[20,-62,1.5],lab:[0,-40,2.2],tanque:[0,-50,3.6],ciudad:[0,-50,5.2]};
+const LSHORT={toma:'Toma (lago Alajuela)',bomba:'Bombas',sulfato:'Sulfato de aluminio',cal:'Cal',mezcla:'Mezcla rápida',floc:'Floculador',sed:'Sedimentador',lodos:'Lodos',filtro:'Filtro',cloro:'Cloro',contacto:'Tanque de contacto',lab:'Laboratorio',tanque:'Tanque',ciudad:'Ciudad de Panamá'};
+for(const id of ORDER){
+  const p=PARTS[id]; const d=document.createElement('div'); d.className='lbl';
+  d.innerHTML=`<i style="background:${p.color}"></i>${LSHORT[id]}<span class="tg ${p.type}">${p.type==='q'?'QUÍMICO':'FÍSICO'}</span>`;
+  d.onclick=e=>{e.stopPropagation();select(id);}; labelsEl.appendChild(d);
+  const a=document.createElement('div'); a.className='anc'; labelsEl.appendChild(a);
+  const ln=document.createElementNS('http://www.w3.org/2000/svg','line'); ln.setAttribute('stroke',p.color); ln.setAttribute('stroke-width','1.3'); ln.setAttribute('stroke-opacity','.8'); linesSvg.appendChild(ln);
+  LBL[id]={d,a,ln};
+}
+const tmpV=new THREE.Vector3();
+function updateLabels(){
+  const w=sceneEl.clientWidth,h=sceneEl.clientHeight; linesSvg.setAttribute('viewBox',`0 0 ${w} ${h}`);
+  for(const id of ORDER){const L=LBL[id]; if(!state.labels){L.d.style.display=L.a.style.display=L.ln.style.display='none';continue;}
+    parts[id].getWorldPosition(tmpV); tmpV.y+=LOFF[id][2]; tmpV.project(camera);
+    const vis=tmpV.z<1&&Math.abs(tmpV.x)<1.1&&Math.abs(tmpV.y)<1.1;
+    if(!vis){L.d.style.display=L.a.style.display=L.ln.style.display='none';continue;}
+    const x=(tmpV.x*.5+.5)*w,y=(-tmpV.y*.5+.5)*h, lx=x+LOFF[id][0], ly=y+LOFF[id][1];
+    L.d.style.display=L.a.style.display=L.ln.style.display='';
+    L.a.style.left=x+'px';L.a.style.top=y+'px';L.a.style.background=PARTS[id].color;
+    L.d.style.left=lx+'px';L.d.style.top=ly+'px';
+    L.ln.setAttribute('x1',x);L.ln.setAttribute('y1',y);L.ln.setAttribute('x2',lx);L.ln.setAttribute('y2',ly);
+    L.d.classList.toggle('sel',state.selected===id); L.d.classList.toggle('act',PART_PHASE[id]===state.phase);
+  }
+}
+
+/* ===== UI: timeline, leyenda, compuestos ===== */
+const segsEl=$('#segs');
+PHASES.forEach((p,i)=>{const b=document.createElement('button');b.className='seg';b.dataset.n=i+1;b.textContent=`${i+1} ${p.name}`;b.style.borderColor=p.color+'66';b.onclick=()=>jumpTo(i);segsEl.appendChild(b);});
+const track=$('#track');
+[[1.18,'Dosis Al₂(SO₄)₃','#d264f0'],[1.55,'Dosis cal','#e2e8f0'],[3.5,'Purga de lodos','#b07a43'],[5.18,'Cloro','#a3e635'],[5.95,'Grifo','#7dd3fc']].forEach(([v,t,c])=>{const m=document.createElement('div');m.className='mk';m.style.left=(v/6*100)+'%';m.style.color=c;m.textContent=t;track.appendChild(m);});
+const legendEl=$('#legend');
+ORDER.forEach(id=>{const b=document.createElement('button');b.className='lg';b.dataset.id=id;b.innerHTML=`<i style="background:${PARTS[id].color}"></i>${LSHORT[id]}`;b.onclick=()=>select(id);legendEl.appendChild(b);});
+const cmpsEl=$('#cmps');
+COMPOUNDS.forEach((c,i)=>{const d=document.createElement('details');d.className='cmp';if(i===0)d.open=true;
+ d.innerHTML=`<summary><span class="dot" style="background:${c.color}"></span>${c.name}<span class="f">${c.f}</span></summary><div class="body"><div style="font-size:10.5px;color:var(--mut);font-family:'Chakra Petch';letter-spacing:.08em">${c.stage}</div><p style="margin-top:4px"><b>Función:</b> ${c.role}</p><div class="eq">${c.eq}</div><b>Límites:</b><ul>${c.lim.map(l=>`<li>${l}</li>`).join('')}</ul></div>`;cmpsEl.appendChild(d);});
+
+function toast(msg){const t=document.createElement('div');t.className='toast';t.textContent=msg;$('#toasts').appendChild(t);setTimeout(()=>{t.style.opacity='0';t.style.transition='opacity .4s';},2200);setTimeout(()=>t.remove(),2700);}
+
+/* ===== selección ===== */
+function setEm(id,color,int){ if(!id||!parts[id]) return; parts[id].userData.mats.forEach(m=>{ if(color==null){m.emissive.copy(m.userData.baseE);m.emissiveIntensity=m.userData.baseEI;} else {m.emissive.set(color);m.emissiveIntensity=int;} }); }
+function select(id){
+  if(state.selected===id){deselect();return;}
+  if(state.selected) setEm(state.selected,null);
+  state.selected=id; const p=PARTS[id];
+  $('#cName').innerHTML=`<span style="width:12px;height:12px;border-radius:50%;background:${p.color};display:inline-block"></span>${p.name} <span class="tg ${p.type}" style="display:inline-block;font-size:9.5px;font-family:'Chakra Petch';padding:2px 6px;border-radius:5px">${p.type==='q'?'QUÍMICO':'FÍSICO'}</span>`;
+  $('#cDesc').textContent=p.desc; const c=$('#card'); c.classList.remove('show'); void c.offsetWidth; c.classList.add('show');
+  document.querySelectorAll('.lg').forEach(b=>b.classList.toggle('sel',b.dataset.id===id)); beep(660,0.08,'triangle',0.04);
+}
+function deselect(){ if(state.selected) setEm(state.selected,null); state.selected=null; $('#card').classList.remove('show'); document.querySelectorAll('.lg').forEach(b=>b.classList.remove('sel')); }
+$('#cardX').onclick=deselect;
+const ray=new THREE.Raycaster(), ndc=new THREE.Vector2();
+function pick(ev){const r=canvas.getBoundingClientRect();ndc.set(((ev.clientX-r.left)/r.width)*2-1,-((ev.clientY-r.top)/r.height)*2+1);ray.setFromCamera(ndc,camera);
+  const hits=ray.intersectObjects(Object.values(parts),true).filter(h=>h.object.userData.partId&&!h.object.userData.skipPick&&h.object.visible);
+  return hits.length?hits[0].object.userData.partId:null;}
+let down=null;
+canvas.addEventListener('pointerdown',e=>{down={x:e.clientX,y:e.clientY,t:performance.now()};unlockAudio();});
+canvas.addEventListener('pointerup',e=>{ if(!down) return; const dx=Math.hypot(e.clientX-down.x,e.clientY-down.y),dt=performance.now()-down.t; down=null;
+  if(dx<6&&dt<450){const id=pick(e); if(id) select(id); else deselect();}});
+canvas.addEventListener('pointermove',e=>{ if(e.buttons) return; const id=pick(e); if(id!==state.hover){ if(state.hover&&state.hover!==state.selected) setEm(state.hover,null); state.hover=id; if(id&&id!==state.selected) setEm(id,0x5ab8ff,0.18); canvas.style.cursor=id?'pointer':'grab'; }});
+
+/* ===== sonido ===== */
+let actx=null, master=null, noiseGain=null;
+function unlockAudio(){
+  if(actx){ if(actx.state==='suspended') actx.resume(); return; }
+  try{ actx=new (window.AudioContext||window.webkitAudioContext)(); master=actx.createGain(); master.gain.value=state.sound?1:0; master.connect(actx.destination);
+    const len=actx.sampleRate*2, buf=actx.createBuffer(1,len,actx.sampleRate), d=buf.getChannelData(0); let last=0;
+    for(let i=0;i<len;i++){const w=Math.random()*2-1; last=(last+0.02*w)/1.02; d[i]=last*3.5;}
+    const src=actx.createBufferSource(); src.buffer=buf; src.loop=true;
+    const lp=actx.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=700;
+    noiseGain=actx.createGain(); noiseGain.gain.value=0.05; src.connect(lp).connect(noiseGain).connect(master); src.start();
+  }catch(e){ actx=null; }
+}
+function beep(f,dur=0.15,type='sine',vol=0.06,slide=0){ if(!actx||!state.sound) return; const t=actx.currentTime; const o=actx.createOscillator(),g=actx.createGain(); o.type=type; o.frequency.setValueAtTime(f,t); if(slide) o.frequency.exponentialRampToValueAtTime(f*slide,t+dur);
+  g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(vol,t+0.01); g.gain.exponentialRampToValueAtTime(0.0001,t+dur); o.connect(g).connect(master); o.start(t); o.stop(t+dur+0.05); }
+function chime(){ [880,1175,1568].forEach((f,i)=>setTimeout(()=>beep(f,0.35,'sine',0.05),i*110)); }
+function bubbleSnd(){ for(let i=0;i<4;i++) setTimeout(()=>beep(300+Math.random()*400,0.08,'sine',0.035,2.2),i*70); }
+window.addEventListener('keydown',unlockAudio,{once:false});
+function setSound(on){ state.sound=on; if(master) master.gain.value=on?1:0; $('#sndTxt').textContent='Sonido: '+(on?'sí':'no'); $('#bSound').classList.toggle('off',!on); $('#sndWave').style.display=on?'':'none'; }
+
+/* ===== eventos del proceso ===== */
+const EVENTS=[
+ {at:118,name:'Se dosifica sulfato de aluminio',pos:[-6.5,1.6,0],color:0xd264f0,snd:()=>beep(520,0.25,'triangle',0.06,0.6)},
+ {at:155,name:'Se añade cal para ajustar el pH',pos:[-6.3,1.6,0],color:0xffffff,snd:()=>beep(430,0.2,'triangle',0.05,0.7)},
+ {at:350,name:'Purga de lodos del sedimentador',pos:[2.4,0.4,0],color:0xb07a43,snd:()=>beep(160,0.35,'sawtooth',0.03,0.6)},
+ {at:518,name:'Inyección de cloro: Cl₂ + H₂O → HOCl + HCl',pos:[10.9,1.0,0],color:0xa3e635,snd:bubbleSnd},
+ {at:594,name:'¡Agua potable en tu grifo!',pos:[16.75,1.0,1.9],color:0x7dd3fc,snd:chime}
+];
+function fireEvent(ev){ burst.position.set(...ev.pos); burst.material.color.set(ev.color); burstT=1; evLight.color.set(ev.color);
+  const wp=burst.getWorldPosition(new THREE.Vector3()); evLight.position.copy(wp); evLight.intensity=14; ev.snd(); toast(ev.name);
+  if(ev.at===594){ const m=model(); if(m.Tf>1||m.coli!=='ausentes'||m.Al>0.2||m.pHf<6.5||m.pHf>8.5) setTimeout(()=>toast('⚠️ Pero el agua no cumple la norma: revisa el laboratorio de dosis'),900); } }
+function setProgress(p){
+  const old=state.progress; let np=p; const wrapped=np>=600; np=((np%600)+600)%600;
+  if(np>old||wrapped){ for(const ev of EVENTS){ if((old<ev.at&&(np>=ev.at||wrapped))||(wrapped&&np>=ev.at)) fireEvent(ev);} }
+  state.progress=np; const ph=Math.floor(np/100); if(ph!==state.phase) onPhase(ph);
+}
+function onPhase(i){
+  state.phase=i; const p=PHASES[i];
+  const tyStyle=p.type==='QUÍMICO'?'background:#4a1d55;color:#f3b4ff':'background:#0f4a4a;color:#7ff5ea';
+  $('#bNum').textContent=i+1; $('#bNum').style.background=p.color; $('#bName').innerHTML=`${p.name}<span class="ty" style="${tyStyle}">${p.type}</span>`; $('#bSub').textContent=p.sub;
+  const b=$('#badge'); b.classList.remove('pop'); void b.offsetWidth; b.classList.add('pop');
+  $('#pN').textContent=i+1; $('#pN').style.background=p.color; $('#pName').innerHTML=`${p.name} <span style="font-family:'Chakra Petch';font-size:10px;padding:2px 6px;border-radius:5px;${tyStyle}">${p.type}</span>`; $('#pSub').textContent=p.sub; $('#pDesc').textContent=p.desc; $('#pTip').textContent=p.tip;
+  document.querySelectorAll('.seg').forEach((s,k)=>{s.classList.toggle('on',k===i);s.style.background=k===i?PHASES[k].color:'';});
+  $('#rPh').textContent=`${i+1} de 6`; beep(300+i*80,0.12,'sine',0.03);
+}
+function jumpTo(i){ state.tween={from:state.progress,to:i*100+1,t:0,dur:0.8,direct:true}; toast('Etapa '+(i+1)+': '+PHASES[i].name); }
+function stepNext(){ const np=(Math.floor(state.progress/100)+1)%6; state.tween=null; if(np===0) setProgress(600.5); else state.tween={from:state.progress,to:np*100+0.5,t:0,dur:0.9}; state.playing=false; updPlay(); toast('Siguiente etapa: '+PHASES[np].name); }
+
+/* ===== cámara ===== */
+const CAMS={front:[[1.5,7,26],[1.5,0.8,0]],side:[[26,9,15],[3,1,0]],top:[[1.5,40,0.5],[1.5,0,0]],iso:[[22,19,24],[1.5,1,0]]};
+function camTo(pos,tgt,dur=1.1){ state.camTween={p0:camera.position.clone(),t0:controls.target.clone(),p1:new THREE.Vector3(...pos),t1:new THREE.Vector3(...tgt),t:0,dur}; }
+document.querySelectorAll('[data-cam]').forEach(b=>b.onclick=()=>{const c=CAMS[b.dataset.cam];camTo(c[0],c[1]);state.follow=false;$('#tFollow').classList.remove('on');toast('Vista: '+b.textContent);});
+$('#bSurprise').onclick=()=>{const a=Math.random()*Math.PI*2,r=14+Math.random()*16,h=4+Math.random()*14; const tx=-10+Math.random()*22; camTo([tx+Math.cos(a)*r,h,Math.sin(a)*r],[tx,1,0]); toast('🎲 Vista sorpresa');};
+$('#bCenter').onclick=()=>{camTo(...homeCam());toast('Vista centrada');};
+
+/* ===== controles UI ===== */
+function updPlay(){ $('#playTxt').textContent=state.playing?'Pausar':'Reproducir'; $('#playIco').setAttribute('d',state.playing?'M7 5h4v14H7zM13 5h4v14h-4z':'M7 5l12 7-12 7z'); }
+$('#bPlay').onclick=()=>{state.playing=!state.playing;updPlay();toast(state.playing?'▶ Reproduciendo':'⏸ En pausa');};
+$('#bStep').onclick=stepNext;
+$('#flow').oninput=e=>{state.flow=+e.target.value; $('#flowV').textContent=state.flow+' m³/s'; $('#rFlow').textContent=state.flow+' m³/s';};
+function setExplode(v,announce){ state.explodeTarget=v; $('#exp').value=Math.round(v*100); $('#expV').textContent=Math.round(v*100)+'%'; $('#bExp').textContent=v>0.5?'ARMAR LA PLANTA':'DESPIECE DE LA PLANTA';
+  if(announce){ if(v>0.5){state.playing=false;toast('Vista expandida: cada etapa separada');} else {state.playing=true;toast('Planta armada: el agua vuelve a fluir');} updPlay(); } }
+$('#bExp').onclick=()=>setExplode(state.explodeTarget>0.5?0:1,true);
+$('#exp').oninput=e=>setExplode(+e.target.value/100,false);
+function tog(id,key,msgOn,msgOff,fn){ const b=$(id); b.onclick=()=>{state[key]=!state[key]; b.classList.toggle('on',state[key]); toast(state[key]?msgOn:msgOff); fn&&fn();}; }
+function applyCut(){ clipMats.forEach(m=>{m.clippingPlanes=state.cut?[cutPlane]:[];m.needsUpdate=true;}); }
+tog('#tCut','cut','Corte transversal activado','Corte desactivado',applyCut);
+tog('#tLbl','labels','Etiquetas visibles','Etiquetas ocultas');
+tog('#tMode','mode','Turquesa = físico · Morado = químico','Modo físico/químico apagado',()=>document.body.classList.toggle('modeon',state.mode));
+tog('#tFollow','follow','La cámara sigue la gota de agua','Cámara libre');
+tog('#tRot','rot','Giro automático','Giro detenido');
+$('#quality').onchange=e=>{state.quality=+e.target.value; applyQuality(); toast('Calidad: '+e.target.selectedOptions[0].text);};
+$('#bSound').onclick=()=>{unlockAudio(); setSound(!state.sound); toast(state.sound?'🔊 Sonido activado':'🔇 Sonido silenciado');};
+$('#bFull').onclick=()=>{ try{ if(!document.fullscreenElement) document.documentElement.requestFullscreen().catch(()=>toast('Pantalla completa no disponible aquí')); else document.exitFullscreen(); }catch(e){toast('Pantalla completa no disponible aquí');} };
+// dosis
+function setDose(k,v){ state[k]=v; const el=$('#'+k); el.value=v; $('#'+k+'V').textContent=(k==='dCl'?v.toFixed(1):v)+' mg/L'; renderResult(); }
+['dAl','dCa','dCl'].forEach(k=>$('#'+k).oninput=e=>setDose(k,+e.target.value));
+$('#season').onchange=e=>{state.season=e.target.value; renderResult(); toast(state.season==='lluvia'?'🌧 Estación lluviosa: el lago trae mucha más arcilla':'☀️ Estación seca: el lago está más claro');};
+function optimal(){ const m=model(); setDose('dAl',Math.round(m.opt)); setDose('dCa',state.season==='lluvia'?14:8); const m2=model(); setDose('dCl',Math.round((m2.demand+1.0)*10)/10); }
+$('#bOpt').onclick=()=>{optimal();toast('✔ Dosis ajustadas como lo haría el laboratorio');};
+const ERRS=[()=>{setDose('dAl',0);return 'Sin coagulante: los flóculos no se forman';},()=>{setDose('dAl',70);setDose('dCa',0);return 'Exceso de sulfato de aluminio y sin cal';},()=>{setDose('dCl',0.3);return 'Cloro insuficiente';},()=>{setDose('dCl',5.5);return 'Demasiado cloro';},()=>{setDose('dCa',40);return 'Exceso de cal';}];
+let errI=0; $('#bBadDose').onclick=()=>{toast('🧪 Error: '+ERRS[errI++%ERRS.length]());};
+function renderResult(){
+  const m=model();
+  const rows=[
+   ['Turbiedad',m.Tf.toFixed(2)+' NTU',m.Tf<=1,'≤ 1.0 NTU'],
+   ['pH',m.pHf.toFixed(2),m.pHf>=6.5&&m.pHf<=8.5,'6.5 – 8.5'],
+   ['Aluminio residual',m.Al.toFixed(2)+' mg/L',m.Al<=0.2,'≤ 0.2 mg/L'],
+   ['Cloro residual',m.resid.toFixed(2)+' mg/L',m.resid>=0.5&&m.resid<=2,'≈ 0.5 – 1.5 mg/L'],
+   ['Coliformes',m.coli,m.coli==='ausentes','ausentes']
+  ];
+  const probs=[];
+  if(m.c<m.opt*0.6) probs.push('Poco coagulante: las partículas siguen con carga negativa y no forman flóculos; el filtro se satura y la turbiedad sube.');
+  if(m.Al>0.2) probs.push('Exceso de sulfato de aluminio: queda Al³⁺ disuelto en el agua (límite ≈ 0.2 mg/L) y se generan más lodos.');
+  if(m.pHf<6.5) probs.push('pH ácido: el coagulante consumió la alcalinidad. Hace falta más cal; el agua ácida corroe las tuberías.');
+  if(m.pHf>8.5) probs.push('pH muy alto por exceso de cal: aparece sarro y el cloro desinfecta peor (HOCl → OCl⁻).');
+  if(m.coli!=='ausentes') probs.push('Cloro insuficiente: el cloro se gasta reaccionando con lo que queda en el agua (demanda ≈ '+m.demand.toFixed(2)+' mg/L) y no alcanza para matar todos los microbios.');
+  if(m.resid>2||m.thm) probs.push('Demasiado cloro: mal sabor y olor, y con materia orgánica se forman trihalometanos (THM), que están regulados.');
+  $('#result').innerHTML=`<div style="font-family:'Chakra Petch';font-size:11px;letter-spacing:.1em;color:var(--mut);margin-bottom:4px">RESULTADO EN EL GRIFO · agua cruda ${m.raw} NTU · dosis óptima ≈ ${Math.round(m.opt)} mg/L</div>`+
+   rows.map(r=>`<div class="rrow"><span>${r[0]} <em>(${r[3]})</em></span><b class="${r[2]?'ok':'bad'}">${r[2]?'✓':'✗'} ${r[1]}</b></div>`).join('')+
+   (probs.length?`<div class="verdict no"><b>No cumple la norma.</b><br>${probs.map(p=>'• '+p).join('<br>')}</div>`:`<div class="verdict good"><b>✓ Agua potable.</b> Cada compuesto está dentro de su rango útil: así trabaja una planta bien operada.</div>`);
+  flocDirty=true;
+}
+let flocDirty=true;
+// captura
+$('#bShot').onclick=()=>{ render(); const url=canvas.toDataURL('image/png'); const f=$('#flash'); f.style.opacity='.7'; setTimeout(()=>f.style.opacity='0',90);
+  try{const a=document.createElement('a');a.href=url;a.download='planta-potabilizadora-'+(state.phase+1)+'.png';document.body.appendChild(a);a.click();a.remove();}catch(e){}
+  $('#shotImg').src=url; $('#shotModal').classList.add('show'); beep(1200,0.06,'square',0.03); toast('📷 Captura lista'); };
+$('#shotClose').onclick=()=>$('#shotModal').classList.remove('show');
+$('#shotModal').onclick=e=>{if(e.target.id==='shotModal')$('#shotModal').classList.remove('show');};
+// reiniciar
+function resetAll(){
+  state.progress=0; state.phase=-1; onPhase(0); state.playing=true; updPlay(); state.tween=null;
+  $('#flow').value=11; $('#flow').oninput({target:$('#flow')});
+  setExplode(0,false); state.explode=0;
+  ['cut','mode','follow','rot'].forEach(k=>{state[k]=false;}); state.labels=true;
+  $('#tCut').classList.remove('on');$('#tMode').classList.remove('on');$('#tFollow').classList.remove('on');$('#tRot').classList.remove('on');$('#tLbl').classList.add('on');
+  document.body.classList.remove('modeon'); applyCut();
+  state.season='seca'; $('#season').value='seca'; setDose('dAl',15); setDose('dCa',8); setDose('dCl',1.6);
+  state.liters=0; deselect(); camTo(...homeCam()); toast('↺ Simulador reiniciado');
+}
+$('#bReset').onclick=resetAll;
+window.addEventListener('keydown',e=>{
+  if(e.target.tagName==='INPUT'||e.target.tagName==='SELECT') { if(e.key!==' ') return; }
+  const k=e.key.toLowerCase();
+  if(e.key===' '){e.preventDefault();$('#bPlay').click();}
+  else if(e.key==='ArrowRight'){e.preventDefault();stepNext();}
+  else if(k==='e') $('#bExp').click(); else if(k==='c') $('#tCut').click(); else if(k==='l') $('#tLbl').click();
+  else if(k==='m') $('#tMode').click(); else if(k==='f') $('#tFollow').click(); else if(k==='r') resetAll();
+  else if(e.key==='Escape'){deselect();$('#shotModal').classList.remove('show');}
+  else if(/^[1-6]$/.test(e.key)) jumpTo(+e.key-1);
+});
+
+/* ===== bucle ===== */
+const clock=new THREE.Clock(); let firstFrame=true;
+const _v=new THREE.Vector3(), _c=new THREE.Color(), dmy=new THREE.Object3D();
+function render(){ if(composer&&state.quality>0) composer.render(); else renderer.render(scene,camera); }
+function tick(){
+  const dt=Math.min(clock.getDelta(),0.05), T=clock.elapsedTime, fk=state.flow/11;
+  const m=model();
+  // progreso
+  if(state.tween){ const tw=state.tween; tw.t+=dt/tw.dur; const k=easeIO(clamp(tw.t,0,1));
+    if(tw.direct){ state.progress=lerp(tw.from,tw.to,k); const ph=Math.floor(state.progress/100); if(ph!==state.phase) onPhase(ph);} else setProgress(lerp(tw.from,tw.to,k));
+    if(tw.t>=1) state.tween=null; }
+  else if(state.playing) setProgress(state.progress+dt*13*fk);
+  state.liters+= state.playing? dt*state.flow*1000*60 : 0;
+  // despiece
+  state.explode=lerp(state.explode,state.explodeTarget,1-Math.pow(0.002,dt)); const ex=smooth(clamp(state.explode,0,1));
+  for(const id in parts){const g=parts[id]; g.position.copy(g.userData.base).addScaledVector(g.userData.off,ex);}
+  pipeMats.forEach(mm=>{mm.transparent=true;mm.opacity=1-ex*0.85;mm.depthWrite=ex<0.5;});
+  // mecanismos
+  impeller.rotation.z+=dt*12*fk; mixer.rotation.y+=dt*14*fk; paddles.forEach(p=>p.rotation.z-=dt*p.userData.speed*fk);
+  labBeacon.material.emissiveIntensity=1.5+Math.sin(T*4)*1.5;
+  // colores del agua por etapa
+  waterMats.lake.color.copy(waterColorAt(0,m)); waterMats.mez.color.copy(waterColorAt((PT[1]+PT[2])/2,m)); waterMats.floc.color.copy(waterColorAt((PT[2]+PT[3])/2,m));
+  waterMats.sed.color.copy(waterColorAt(PT[3]+(PT[4]-PT[3])*0.7,m)); waterMats.fil.color.copy(waterColorAt(PT[4]+0.01,m)); waterMats.con.color.copy(waterColorAt(PT[5]+0.02,m)); waterMats.tan.color.copy(waterColorAt(0.97,m));
+  sludge.scale.y=0.6+(1-m.Ts/m.raw)*0.8*(state.season==='lluvia'?1.6:1)+Math.sin(T*0.5)*0.02;
+  // agua
+  const fade=1-ex*0.85;
+  if(flow){ const P=flow.P,pos=flow.pos,col=flow.col;
+    for(let i=0;i<P.length;i++){const q=P[i]; q.t+=dt*0.028*fk*q.v; if(q.t>1) q.t-=1; const p=lutPos(q.t); const s=spreadAt(p.x);
+      pos[i*3]=p.x+q.j.x*s; pos[i*3+1]=p.y+q.j.y*s*0.55; pos[i*3+2]=p.z+q.j.z*s*1.6;
+      if((i+Math.floor(T*30))%6===0){_c.copy(waterColorAt(q.t,m)).multiplyScalar(1.35); col[i*3]=_c.r;col[i*3+1]=_c.g;col[i*3+2]=_c.b;}}
+    flow.obj.geometry.attributes.position.needsUpdate=true; flow.obj.geometry.attributes.color.needsUpdate=true; flow.obj.material.opacity=0.95*fade; flow.obj.visible=fade>0.2; }
+  if(microbes){ const P=microbes.P,pos=microbes.pos; const killP=m.coli==='ausentes'?1:(m.coli==='pocos'?0.7:0); let vis=0;
+    for(let i=0;i<P.length;i++){const q=P[i]; const old=q.t; q.t+=dt*0.028*fk*q.v; if(q.t>1){q.t-=1;q.alive=true;}
+      const tF=(PT[4]+PT[5])/2, tC=PT[5]+(1-PT[5])*0.35;
+      if(old<tF&&q.t>=tF&&Math.random()<0.7) q.alive=false;
+      if(old<tC&&q.t>=tC&&Math.random()<killP) q.alive=false;
+      const p=lutPos(q.t), s=spreadAt(p.x);
+      if(q.alive){pos[i*3]=p.x+q.j.x*s;pos[i*3+1]=p.y+q.j.y*s*0.5;pos[i*3+2]=p.z+q.j.z*s*1.5;vis++;} else {pos[i*3+1]=-50;}}
+    microbes.obj.geometry.attributes.position.needsUpdate=true; microbes.obj.material.opacity=fade; microbes.obj.material.size=0.2+Math.sin(T*6)*0.04; }
+  if(flocs){ const P=flocs.P, ef=m.c<=0?0.12:m.e; const nShow=Math.round(P.length*clamp(ef*1.05,0.1,1)); const big=0.6+ef*1.6; const sedFloor=0.42+(sludge.scale.y-1)*0.1;
+    for(let i=0;i<P.length;i++){const f=P[i];
+      if(f.x<-0.9){ f.x+=dt*0.33*fk; f.y+=Math.sin(T*2+i)*dt*0.15; f.y=clamp(f.y,0.25,1.25); f.s=lerp(0.35,big,clamp((f.x+4.1)/3.2,0,1)); }
+      else { if(f.x<0.3) f.x=0.3; f.x+=dt*0.22*fk*(f.y>sedFloor+0.05?1:0); f.vy=lerp(f.vy,-0.18*f.s*fk,dt*2); f.y+=f.vy*dt; if(f.y<sedFloor){f.y=sedFloor;}
+        if(f.x>4.4||(f.y<=sedFloor&&Math.random()<dt*0.4)) Object.assign(f,newFloc(false)); }
+      dmy.position.set(f.x,f.y,f.z); dmy.scale.setScalar(i<nShow?f.s:0.0001); dmy.rotation.set(i,T*0.3+i,0); dmy.updateMatrix(); flocs.obj.setMatrixAt(i,dmy.matrix);}
+    flocs.obj.instanceMatrix.needsUpdate=true; flocs.obj.visible=fade>0.3; flocs.obj.material.color.set(state.season==='lluvia'?0x6b3f17:0x8a5a2b); }
+  // gotas de dosificación
+  drops.forEach(d=>{ const dose=d.isAl?state.dAl/70:state.dCa/40; d.m.visible=dose>0.01&&fade>0.5; d.y-=dt*(1.6+dose)*fk; if(d.y<1.3){d.y=1.9+Math.random()*(1.2-dose);} d.m.position.set(d.x,clamp(d.y,1.3,1.9),d.z); d.m.scale.setScalar(d.y>1.9?0.001:1); });
+  if(bubbles){ const P=bubbles.P,pos=bubbles.pos; const n=Math.round(P.length*clamp(state.dCl/3,0,1));
+    for(let i=0;i<P.length;i++){const b=P[i]; b.y+=dt*b.s; if(b.y>1.1){b.y=0.2;b.x=9.9+Math.random()*2;} pos[i*3]=i<n?b.x+Math.sin(T*3+i)*0.04:0; pos[i*3+1]=i<n?b.y:-50; pos[i*3+2]=b.z;}
+    bubbles.obj.geometry.attributes.position.needsUpdate=true; bubbles.obj.visible=fade>0.5; }
+  tapDrops.forEach((d,i)=>{ d.y+=dt*1.6*fk; if(d.y>1) d.y-=1; const fp=faucet.getWorldPosition(_v); d.m.visible=fade>0.5; d.m.position.set(fp.x-plant.position.x+0.36,0.86-d.y*0.6,fp.z); });
+  if(dust){ dust.rotation.y+=dt*0.01; dust.position.y=Math.sin(T*0.2)*0.3; }
+  // gota guía + luz
+  const gp=lutPos(tFromProgress(state.progress)); guide.position.copy(gp); guide.visible=fade>0.4; guide.scale.setScalar(1+Math.sin(T*6)*0.12);
+  guide.getWorldPosition(_v); dropLight.position.copy(_v); dropLight.color.set(PHASES[state.phase].color); dropLight.intensity=2.2*fade;
+  // placas
+  for(const id in plates){const pl=plates[id]; const isAct=PART_PHASE[id]===state.phase;
+    if(state.mode){pl.material.color.set(PARTS[id].type==='q'?0xd264f0:0x2fd3c8); pl.material.opacity=0.32+Math.sin(T*3)*0.06;}
+    else if(isAct){pl.material.color.set(PHASES[state.phase].color); pl.material.opacity=0.22+Math.sin(T*4)*0.08;} else pl.material.opacity=lerp(pl.material.opacity,0,dt*4);}
+  // destellos
+  if(burstT>0){burstT-=dt*1.6; const k=1-burstT; burst.scale.setScalar(0.3+k*1.6); burst.material.opacity=Math.max(0,burstT)*0.55;} else burst.material.opacity=0;
+  evLight.intensity=lerp(evLight.intensity,0,dt*3);
+  // selección pulsante
+  if(state.selected) setEm(state.selected,0x22d3ee,0.35+Math.sin(T*5)*0.25);
+  // sonido de fondo
+  if(noiseGain) noiseGain.gain.value=lerp(noiseGain.gain.value,state.playing?0.025+0.004*state.flow:0.008,dt*2);
+  // cámara
+  if(state.camTween){const c=state.camTween; c.t+=dt/c.dur; const k=easeIO(clamp(c.t,0,1)); camera.position.lerpVectors(c.p0,c.p1,k); controls.target.lerpVectors(c.t0,c.t1,k); if(c.t>=1) state.camTween=null;}
+  else if(state.follow){ guide.getWorldPosition(_v); controls.target.lerp(_v,dt*2.2); const want=_v.clone().add(new THREE.Vector3(3,6.5,11)); camera.position.lerp(want,dt*1.2); }
+  else if(ex>0.01&&state.explodeTarget>0.5){ const d=camera.position.distanceTo(controls.target); if(d<38){ _v.subVectors(camera.position,controls.target).setLength(lerp(d,38,dt*1.5)); camera.position.copy(controls.target).add(_v);} }
+  controls.autoRotate=state.rot; controls.autoRotateSpeed=0.8; controls.update();
+  // lecturas
+  const R=readingsAt(state.progress);
+  const tCol=R.T>5?'#c08a4a':R.T>1?'#fbbf24':'#34d399';
+  $('#vT').textContent=R.T>=10?R.T.toFixed(0):R.T.toFixed(2); $('#mT').style.width=clamp(Math.log10(R.T+1)/Math.log10(80)*100,3,100)+'%'; $('#mT').style.background=tCol;
+  $('#vP').textContent=R.pH.toFixed(2); $('#mP').style.width=clamp((R.pH-4)/7*100,2,100)+'%'; $('#mP').style.background=R.pH>=6.5&&R.pH<=8.5?'#34d399':'#fb5a7a';
+  $('#vC').textContent=R.Cl.toFixed(2); $('#mC').style.width=clamp(R.Cl/3*100,0,100)+'%'; $('#mC').style.background=R.Cl>2?'#fbbf24':'#a3e635';
+  $('#vB').textContent=R.B<0.02?'0%':Math.round(R.B*100)+'%'; $('#mB').style.width=clamp(R.B*100,0,100)+'%'; $('#mB').style.background='#fb5a7a';
+  $('#mkr').style.left=(state.progress/600*100)+'%'; $('#rProg').textContent=Math.round(state.progress/6)+'%';
+  $('#rLit').textContent=Math.round(state.liters).toLocaleString('es-PA');
+  render(); updateLabels();
+  if(firstFrame){firstFrame=false; clearTimeout(failTimer); const L=$('#loader'); L.style.opacity='0'; setTimeout(()=>L.style.display='none',600);}
+}
+applyQuality(); {const h=homeCam(); camera.position.set(...h[0]);} setSound(true); onPhase(0); renderResult();
+renderer.setAnimationLoop(tick);
+</script>
 </body>
 </html>
