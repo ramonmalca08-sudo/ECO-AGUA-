@@ -202,6 +202,36 @@ kbd{font-family:'Chakra Petch';font-size:11px;padding:1px 6px;border-radius:5px;
   .timeline{left:8px;right:8px}
   .hbtn span{display:none}
 }
+/* compuestos por etapa */
+.chemnow{position:absolute;left:16px;top:86px;width:350px;max-height:calc(100% - 230px);overflow:auto;padding:12px 14px;border-radius:16px;background:#061c2bf2;border:1px solid var(--line);box-shadow:0 16px 40px #000a;display:none;z-index:2}
+.chemnow.show{display:block;animation:pop .35s ease}
+.chemnow h5{font-family:'Chakra Petch';font-size:10px;letter-spacing:.12em;color:var(--aqua);padding-right:18px}
+.chemnow h3{font-size:15px;margin:4px 0 6px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.chemnow h3 i{width:11px;height:11px;border-radius:50%;flex:none;box-shadow:0 0 8px currentColor}
+.chemnow h3 em{font-style:normal;font-family:'Chakra Petch';font-size:13px;color:#bfe9ff}
+.chemnow p{font-size:12.2px;line-height:1.45;color:#d3ebf7;margin-top:4px}
+.chemnow .cneq{font-family:'Chakra Petch';background:#0b2a3d;border-radius:8px;padding:6px 8px;margin:7px 0 2px;color:#bfe9ff;font-size:12px}
+.chemnow small{display:block;margin-top:7px;font-size:11px;line-height:1.4;color:var(--warn)}
+.chemnow .x{position:absolute;right:9px;top:6px;background:none;border:none;font-size:18px;color:var(--mut)}
+.cdot{position:absolute;top:4px;width:8px;height:8px;border-radius:50%;transform:translateX(-50%);border:1px solid #061c2b;cursor:pointer;box-shadow:0 0 6px #0008;z-index:1}
+.cdot:hover{transform:translateX(-50%) scale(1.5)}
+.cgh{display:flex;justify-content:space-between;align-items:center;margin:10px 0 5px;padding-left:8px;border-left:3px solid;font-size:12px}
+.cgh span{font-family:'Chakra Petch';font-size:9.5px;letter-spacing:.1em;color:var(--mut)}
+.cgn{font-size:11.5px;color:var(--dim);line-height:1.45;padding:2px 0 2px 11px}
+.citem{display:flex;gap:9px;align-items:flex-start;width:100%;text-align:left;padding:8px 9px;margin:4px 0;border-radius:10px;border:1px solid #1d577477;background:#071f2e;transition:border-color .15s,transform .15s}
+.citem:hover{border-color:var(--aqua);transform:translateY(-1px)}
+.citem i{width:10px;height:10px;border-radius:50%;margin-top:4px;flex:none;border:1px solid #ffffff44}
+.citem span{flex:1;font-size:12px;line-height:1.35}
+.citem em{font-style:normal;font-family:'Chakra Petch';color:#bfe9ff;font-size:11.5px}
+.citem small{display:block;color:var(--mut);font-size:11px;margin-top:2px}
+.citem u{text-decoration:none;font-family:'Chakra Petch';font-size:9px;letter-spacing:.06em;padding:2px 6px;border-radius:5px;background:#0f3a55;color:var(--mut);white-space:nowrap}
+.pchem{margin-top:9px}
+.pch-t{font-size:11px;font-family:'Chakra Petch';letter-spacing:.08em;color:var(--mut);margin-bottom:5px}
+.pch{display:inline-flex;align-items:center;gap:6px;margin:0 5px 5px 0;padding:5px 9px;border-radius:999px;border:1px solid #1d577499;background:#0b2a3d;font-size:11.5px}
+.pch:hover{border-color:var(--aqua)}
+.pch i{width:8px;height:8px;border-radius:50%}
+.pch em{font-style:normal;font-family:'Chakra Petch';color:#bfe9ff}
+@media (max-width:920px){.chemnow{left:8px;top:62px;width:calc(100% - 190px);max-height:calc(100% - 200px);padding:9px}.chemnow p{font-size:11px}.chemnow h3{font-size:13px}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -225,6 +255,7 @@ kbd{font-family:'Chakra Petch';font-size:11px;padding:1px 6px;border-radius:5px;
     <div id="labels"><svg id="lines"></svg></div>
     <div class="vig"></div><div class="grain"></div>
     <div class="badge" id="badge"><div class="num" id="bNum">1</div><div><h2 id="bName">Captación</h2><p id="bSub">—</p></div></div>
+    <div class="chemnow" id="chemNow" aria-live="polite"><button class="x" id="cnX" aria-label="Cerrar">×</button><h5 id="cnTag"></h5><h3 id="cnName"></h3><p class="cnr"><b>Función:</b> <span id="cnRole"></span></p><p><b>¿Qué ocurre en el agua?</b> <span id="cnWhat"></span></p><div class="cneq" id="cnEq"></div><small id="cnNote"></small></div>
     <div class="help">Arrastra para girar · rueda para zoom · clic en una pieza para ver qué hace</div>
     <div class="meters" id="meters">
       <h4>Calidad del agua · aquí</h4>
@@ -259,6 +290,7 @@ kbd{font-family:'Chakra Petch';font-size:11px;padding:1px 6px;border-radius:5px;
       <div class="ph"><div class="n" id="pN">1</div><div><h4 id="pName">Captación</h4><small id="pSub"></small></div></div>
       <p id="pDesc"></p>
       <div class="obs">👀 <b>Observa:</b> <span id="pTip"></span></div>
+      <div class="pchem" id="pChem"></div>
     </div>
 
     <div class="sec">
@@ -294,6 +326,12 @@ kbd{font-family:'Chakra Petch';font-size:11px;padding:1px 6px;border-radius:5px;
     <div class="sec">
       <h3>Compuestos químicos · función y límites</h3>
       <div id="cmps"></div>
+    </div>
+
+    <div class="sec">
+      <h3>Compuestos de la planta de Chilibre · por etapa</h3>
+      <div class="hint" style="margin:-2px 0 8px">Toca un compuesto para ir al momento en que entra al agua. Los puntos de colores en la línea de tiempo marcan cada adición.</div>
+      <div id="chemByStage"></div>
     </div>
 
     <div class="sec">
@@ -858,6 +896,7 @@ function fireEvent(ev){ burst.position.set(...ev.pos); burst.material.color.set(
 function setProgress(p){
   const old=state.progress; let np=p; const wrapped=np>=600; np=((np%600)+600)%600;
   if(np>old||wrapped){ for(const ev of EVENTS){ if((old<ev.at&&(np>=ev.at||wrapped))||(wrapped&&np>=ev.at)) fireEvent(ev);} }
+  if(np>old||wrapped){ for(const c of CHEM2){ if(c.at!=null&&old<c.at&&(np>=c.at||wrapped)) showChem(c);} }
   state.progress=np; const ph=Math.floor(np/100); if(ph!==state.phase) onPhase(ph);
 }
 function onPhase(i){
@@ -867,6 +906,7 @@ function onPhase(i){
   const b=$('#badge'); b.classList.remove('pop'); void b.offsetWidth; b.classList.add('pop');
   $('#pN').textContent=i+1; $('#pN').style.background=p.color; $('#pName').innerHTML=`${p.name} <span style="font-family:'Chakra Petch';font-size:10px;padding:2px 6px;border-radius:5px;${tyStyle}">${p.type}</span>`; $('#pSub').textContent=p.sub; $('#pDesc').textContent=p.desc; $('#pTip').textContent=p.tip;
   document.querySelectorAll('.seg').forEach((s,k)=>{s.classList.toggle('on',k===i);s.style.background=k===i?PHASES[k].color:'';});
+  if(typeof CHEM2!=='undefined') renderPhaseChem(i);
   $('#rPh').textContent=`${i+1} de 6`; beep(300+i*80,0.12,'sine',0.03);
 }
 function jumpTo(i){ state.tween={from:state.progress,to:i*100+1,t:0,dur:0.8,direct:true}; toast('Etapa '+(i+1)+': '+PHASES[i].name); }
@@ -936,6 +976,7 @@ $('#shotClose').onclick=()=>$('#shotModal').classList.remove('show');
 $('#shotModal').onclick=e=>{if(e.target.id==='shotModal')$('#shotModal').classList.remove('show');};
 // reiniciar
 function resetAll(){
+  hideChem();
   state.progress=0; state.phase=-1; onPhase(0); state.playing=true; updPlay(); state.tween=null;
   $('#flow').value=11; $('#flow').oninput({target:$('#flow')});
   setExplode(0,false); state.explode=0;
@@ -956,6 +997,134 @@ window.addEventListener('keydown',e=>{
   else if(e.key==='Escape'){deselect();$('#shotModal').classList.remove('show');}
   else if(/^[1-6]$/.test(e.key)) jumpTo(+e.key-1);
 });
+
+/* ===== COMPUESTOS DE LA PLANTA (por etapa) ===== */
+// stage: índice de etapa (0–5) o null = información complementaria (ubicación exacta no confirmada)
+// at: momento del recorrido (0–600) en que se agrega o actúa · loc: punto aproximado en 3D (coordenadas de la planta)
+const CHEM2=[
+ {id:'carbon',name:'Carbón activado de origen mineral',f:'(sin fórmula fija · carbono poroso)',stage:0,at:60,color:'#3f3f46',loc:[-8.4,1.5,-0.6],tag:'Se agrega',
+  role:'Se utiliza para adsorber gases y reducir olores del agua cruda.',
+  what:'Sus millones de poros retienen en su superficie (adsorción) gases y compuestos que dan mal olor y sabor al agua cruda. Después queda atrapado en los flóculos y en el filtro.',
+  note:'Se aplica al agua cruda; nuestras fuentes no confirman el punto exacto de dosificación en Chilibre (en el simulador se muestra a la entrada de la planta).'},
+ {id:'bicarb',name:'Bicarbonato de calcio',f:'Ca(HCO₃)₂',stage:1,at:112,color:'#fcd34d',loc:[-6.5,1.3,0],tag:'Participa',
+  role:'Contribuye a la alcalinidad y dureza del agua.',
+  what:'Viene disuelto de forma natural en el agua del lago. Su alcalinidad reacciona con el coagulante y permite que se forme el hidróxido de aluminio:',
+  eq:'Al₂(SO₄)₃ + 3 Ca(HCO₃)₂ → 2 Al(OH)₃↓ + 3 CaSO₄ + 6 CO₂',
+  note:'No se dosifica: ya es parte del agua cruda.'},
+ {id:'alum',name:'Sulfato de aluminio',f:'Al₂(SO₄)₃',stage:1,at:118,color:'#d264f0',loc:[-6.5,1.5,0],tag:'Se agrega',
+  role:'Se utiliza como coagulante para agrupar las partículas suspendidas en el agua.',
+  what:'Libera iones Al³⁺ que neutralizan la carga negativa de la arcilla. Las partículas dejan de repelerse y empiezan a juntarse (gotas moradas en la mezcla rápida).',
+  eq:'Al₂(SO₄)₃ → 2 Al³⁺ + 3 SO₄²⁻'},
+ {id:'fecl3',name:'Cloruro férrico',f:'FeCl₃',stage:1,at:123,color:'#b45309',loc:[-6.4,1.5,0.3],tag:'Coagulante',
+  role:'Se utiliza como coagulante para retirar partículas suspendidas.',
+  what:'Funciona igual que el sulfato de aluminio, pero con hierro: forma hidróxido férrico, un sólido que atrapa las partículas.',
+  eq:'FeCl₃ + 3 H₂O → Fe(OH)₃↓ + 3 HCl',
+  note:'Nuestras fuentes no confirman si se usa junto al sulfato de aluminio o en lugar de él (por ejemplo, según la época).'},
+ {id:'polcat',name:'Polímero catiónico',f:'(sin fórmula específica)',stage:1,at:128,color:'#f472b6',loc:[-6.6,1.5,-0.3],tag:'Ayudante',
+  role:'Ayuda a agrupar partículas suspendidas durante el tratamiento.',
+  what:'Sus largas cadenas tienen carga positiva: se pegan a las partículas negativas y las agrupan, reforzando el trabajo del coagulante.',
+  note:'Se ubica como ayudante de coagulación; el punto exacto de dosificación no está confirmado.'},
+ {id:'cal',name:'Hidróxido de calcio (cal)',f:'Ca(OH)₂',stage:1,at:155,color:'#f1f5f9',loc:[-6.3,1.5,0],tag:'Se agrega',
+  role:'Se utiliza para ajustar el pH del agua.',
+  what:'Neutraliza la acidez que deja el coagulante y sube el pH, para que la coagulación funcione y el agua no corroa las tuberías (gotas blancas).',
+  eq:'Ca(OH)₂ + 2 H⁺ → Ca²⁺ + 2 H₂O',
+  note:'Es la cal del tanque blanco. El simulador la dosifica en la mezcla rápida; el ajuste de pH también puede hacerse en otros puntos.'},
+ {id:'aloh3',name:'Hidróxido de aluminio',f:'Al(OH)₃',stage:1,at:172,color:'#c08a4a',loc:[-6.5,1.0,0],tag:'Se forma',
+  role:'Se forma durante la coagulación y ayuda a atrapar partículas e impurezas.',
+  what:'No se agrega: se produce en el agua a partir del coagulante. Es un sólido gelatinoso que atrapa arcilla, color y microbios. Los flóculos cafés que crecen en el floculador y se hunden en el sedimentador son Al(OH)₃ con impurezas, y terminan en los lodos.',
+  eq:'Al³⁺ + 3 OH⁻ → Al(OH)₃↓'},
+ {id:'polan',name:'Polímero aniónico',f:'(sin fórmula específica)',stage:2,at:218,color:'#fb923c',loc:[-2.6,1.4,0],tag:'Ayudante',
+  role:'Ayuda en la formación de flóculos para facilitar la eliminación de impurezas.',
+  what:'Sus cadenas largas “cosen” los microflóculos entre sí y forman flóculos grandes y pesados que se hunden más rápido en el sedimentador.'},
+ {id:'caclo',name:'Hipoclorito de calcio',f:'Ca(ClO)₂',stage:5,at:504,color:'#bef264',loc:[10.4,1.3,-0.5],tag:'Desinfectante',
+  role:'Se utiliza como desinfectante para eliminar microorganismos.',
+  what:'Es un sólido que al disolverse libera ion hipoclorito; en el agua se convierte en ácido hipocloroso, que es el que destruye los microbios.',
+  eq:'Ca(ClO)₂ → Ca²⁺ + 2 ClO⁻ ;  ClO⁻ + H₂O ⇌ HClO + OH⁻'},
+ {id:'naclo',name:'Hipoclorito de sodio',f:'NaClO',stage:5,at:510,color:'#86efac',loc:[10.9,1.3,0],tag:'Desinfectante',
+  role:'Se utiliza como desinfectante para eliminar microorganismos.',
+  what:'Es un desinfectante líquido (como el cloro de uso doméstico, pero más concentrado). También produce ácido hipocloroso en el agua.',
+  eq:'NaClO → Na⁺ + ClO⁻ ;  ClO⁻ + H₂O ⇌ HClO + OH⁻',
+  note:'El cloro puede venir en gas (los cilindros del modelo), hipoclorito de calcio o hipoclorito de sodio: los tres generan el mismo HClO.'},
+ {id:'hclo',name:'Ácido hipocloroso',f:'HClO',stage:5,at:530,color:'#a3e635',loc:[11.4,1.2,0.4],tag:'Se forma',
+  role:'Es un agente desinfectante que se forma cuando el cloro reacciona con el agua.',
+  what:'Atraviesa la pared de bacterias y virus y los destruye: por eso los puntos rojos desaparecen en el tanque de contacto. Lo que sobra queda como cloro residual que protege el agua en las tuberías.',
+  eq:'Cl₂ + H₂O → HClO + HCl ;  HClO ⇌ H⁺ + ClO⁻'},
+ {id:'fluor',name:'Silicofluoruro de sodio',f:'Na₂SiF₆',stage:null,color:'#93c5fd',tag:'Complementario',
+  role:'Se utiliza para incorporar fluoruro al agua mediante un sistema de dosificación.',
+  what:'Al disolverse libera iones fluoruro (F⁻), que ayudan a prevenir las caries. La OMS recomienda no pasar de 1.5 mg/L.',
+  eq:'Na₂SiF₆ + 2 H₂O → 2 Na⁺ + 6 F⁻ + SiO₂ + 4 H⁺',
+  note:'Tiene su propio sistema de dosificación, pero nuestras fuentes no confirman en qué etapa exacta del proceso de Chilibre se aplica. Es el mismo compuesto que el “fluorosilicato de sodio” de las fichas.'},
+ {id:'caco3',name:'Carbonato de calcio',f:'CaCO₃',stage:null,color:'#e7e5e4',tag:'Complementario',
+  role:'Se relaciona con la dureza y el equilibrio mineral del agua.',
+  what:'Si el agua tiende a depositar CaCO₃, forma sarro en tuberías; si tiende a disolverlo, puede volverse corrosiva. Las plantas buscan un punto de equilibrio.',
+  eq:'Ca²⁺ + 2 HCO₃⁻ ⇌ CaCO₃ + CO₂ + H₂O',
+  note:'Describe una propiedad del agua; no se confirma un punto de dosificación en Chilibre.'},
+ {id:'co2',name:'Dióxido de carbono',f:'CO₂',stage:null,color:'#cbd5e1',tag:'Complementario',
+  role:'Se utiliza para ajustar el pH del agua en determinados tratamientos.',
+  what:'Al disolverse forma ácido carbónico y baja el pH. También se produce de forma natural en la reacción de coagulación con el bicarbonato.',
+  eq:'CO₂ + H₂O ⇌ H₂CO₃ ⇌ H⁺ + HCO₃⁻',
+  note:'Nuestras fuentes no confirman en qué etapa se aplica en Chilibre.'}
+];
+const NO_CHEM={3:'En esta etapa no se agrega ningún compuesto: es un proceso físico. Aquí se retira el Al(OH)₃ formado en la coagulación, que se hunde con las impurezas y sale con los lodos.',
+               4:'En esta etapa no se agrega ningún compuesto: la antracita, la arena y la grava separan físicamente los flóculos finos que quedaron.'};
+const STAGE_LBL=s=>s==null?'Información complementaria':`Etapa ${s+1} · ${PHASES[s].name}`;
+// lista del panel
+(function buildChemList(){
+  const box=$('#chemByStage'); const groups=[0,1,2,3,4,5,null];
+  groups.forEach(s=>{
+    const items=CHEM2.filter(c=>c.stage===s);
+    const h=document.createElement('div'); h.className='cgh'; h.style.borderColor=s==null?'#64748b':PHASES[s].color;
+    h.innerHTML=`<b>${STAGE_LBL(s)}</b>${s!=null?`<span>${PHASES[s].type}</span>`:'<span>ubicación no confirmada</span>'}`; box.appendChild(h);
+    if(!items.length){const p=document.createElement('p');p.className='cgn';p.textContent=NO_CHEM[s]||'—';box.appendChild(p);return;}
+    items.forEach(c=>{const b=document.createElement('button');b.className='citem';b.title='Ver en el simulador';
+      b.innerHTML=`<i style="background:${c.color}"></i><span><b>${c.name}</b> <em>${c.f}</em><small>${c.role}</small></span><u>${c.tag}</u>`;
+      b.onclick=()=>goChem(c); box.appendChild(b);});
+  });
+  CHEM2.filter(c=>c.at!=null).forEach(c=>{const d=document.createElement('div');d.className='cdot';d.style.left=(c.at/600*100)+'%';d.style.background=c.color;d.title=`${c.name} ${c.f}`;d.onclick=()=>goChem(c);$('#track').appendChild(d);});
+})();
+function renderPhaseChem(i){
+  const el=$('#pChem'); if(!el) return; const items=CHEM2.filter(c=>c.stage===i);
+  el.innerHTML=`<div class="pch-t">🧪 Compuestos en esta etapa</div>`+(items.length?items.map(c=>`<button class="pch" data-id="${c.id}"><i style="background:${c.color}"></i>${c.name} <em>${c.f.startsWith('(')?'':c.f}</em></button>`).join(''):`<p class="cgn">${NO_CHEM[i]||''}</p>`);
+  el.querySelectorAll('.pch').forEach(b=>b.onclick=()=>goChem(CHEM2.find(c=>c.id===b.dataset.id)));
+}
+let chemTimer=null;
+function showChem(c){
+  const el=$('#chemNow');
+  $('#cnTag').textContent=(c.stage==null?'INFORMACIÓN COMPLEMENTARIA':`${c.tag.toUpperCase()} · ${STAGE_LBL(c.stage).toUpperCase()}`);
+  $('#cnName').innerHTML=`<i style="background:${c.color}"></i>${c.name} <em>${c.f}</em>`;
+  $('#cnRole').textContent=c.role; $('#cnWhat').textContent=c.what;
+  $('#cnEq').style.display=c.eq?'':'none'; $('#cnEq').textContent=c.eq||'';
+  $('#cnNote').style.display=c.note?'':'none'; $('#cnNote').textContent=c.note?'ℹ️ '+c.note:'';
+  el.classList.remove('show'); void el.offsetWidth; el.classList.add('show');
+  document.querySelectorAll('.citem').forEach(b=>b.classList.remove('sel'));
+  clearTimeout(chemTimer); chemTimer=setTimeout(hideChem,c.stage==null?14000:9000);
+  if(c.loc){ chemFx.pos.set(...c.loc); chemFx.color.set(c.color); chemFx.t=3.2; }
+  beep(740,0.1,'sine',0.035,1.3);
+}
+function hideChem(){ $('#chemNow').classList.remove('show'); }
+function goChem(c){
+  if(c.at!=null){ state.tween={from:state.progress,to:c.at+0.5,t:0,dur:0.8,direct:true}; state.playing=false; updPlay(); setTimeout(()=>showChem(c),350); }
+  else showChem(c);
+}
+// marcador 3D de dosificación: anillo pulsante + lluvia de partículas del color del compuesto
+const chemFx={pos:new THREE.Vector3(),color:new THREE.Color(),t:0};
+const chemRing=new THREE.Mesh(new THREE.TorusGeometry(0.5,0.05,10,40),new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:0,depthWrite:false}));
+chemRing.rotation.x=-Math.PI/2; plant.add(chemRing);
+const CFX_N=46; const chemRainPos=new Float32Array(CFX_N*3); const chemRainP=[];
+for(let i=0;i<CFX_N;i++) chemRainP.push({a:Math.random()*Math.PI*2,r:Math.random()*0.45,y:Math.random(),v:0.7+Math.random()*0.6});
+const chemRainGeo=new THREE.BufferGeometry(); chemRainGeo.setAttribute('position',new THREE.BufferAttribute(chemRainPos,3));
+const chemRain=new THREE.Points(chemRainGeo,new THREE.PointsMaterial({size:0.12,map:dotTex,transparent:true,depthWrite:false,opacity:0}));
+chemRain.frustumCulled=false; plant.add(chemRain);
+function updChemMarker(dt,T){
+  if(chemFx.t<=0){ chemRing.material.opacity=0; chemRain.material.opacity=0; return; }
+  chemFx.t-=dt; const a=clamp(chemFx.t/0.6,0,1);
+  chemRing.position.copy(chemFx.pos); chemRing.scale.setScalar(1+0.25*Math.sin(T*8)); chemRing.material.color.copy(chemFx.color); chemRing.material.opacity=0.85*a;
+  chemRain.material.color.copy(chemFx.color); chemRain.material.opacity=a;
+  for(let i=0;i<CFX_N;i++){const q=chemRainP[i]; q.y-=dt*q.v; if(q.y<0) q.y+=1;
+    chemRainPos[i*3]=chemFx.pos.x+Math.cos(q.a)*q.r; chemRainPos[i*3+1]=chemFx.pos.y+q.y*1.3; chemRainPos[i*3+2]=chemFx.pos.z+Math.sin(q.a)*q.r;}
+  chemRainGeo.attributes.position.needsUpdate=true;
+}
+$('#cnX').onclick=hideChem;
 
 /* ===== bucle ===== */
 const clock=new THREE.Clock(); let firstFrame=true;
@@ -1038,7 +1207,7 @@ function tick(){
   $('#vB').textContent=R.B<0.02?'0%':Math.round(R.B*100)+'%'; $('#mB').style.width=clamp(R.B*100,0,100)+'%'; $('#mB').style.background='#fb5a7a';
   $('#mkr').style.left=(state.progress/600*100)+'%'; $('#rProg').textContent=Math.round(state.progress/6)+'%';
   $('#rLit').textContent=Math.round(state.liters).toLocaleString('es-PA');
-  render(); updateLabels();
+  updChemMarker(dt,T); render(); updateLabels();
   if(firstFrame){firstFrame=false; clearTimeout(failTimer); const L=$('#loader'); L.style.opacity='0'; setTimeout(()=>L.style.display='none',600);}
 }
 applyQuality(); {const h=homeCam(); camera.position.set(...h[0]);} setSound(true); onPhase(0); renderResult();
